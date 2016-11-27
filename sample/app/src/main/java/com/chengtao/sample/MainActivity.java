@@ -6,11 +6,11 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.chengtao.pianoview.entity.Piano;
-import com.chengtao.pianoview.impl.OnLoadMusicListener;
+import com.chengtao.pianoview.impl.OnLoadAudioListener;
 import com.chengtao.pianoview.impl.OnPianoClickListener;
 import com.chengtao.pianoview.view.PianoView;
 
-public class MainActivity extends AppCompatActivity implements OnPianoClickListener,OnLoadMusicListener{
+public class MainActivity extends AppCompatActivity implements OnPianoClickListener,OnLoadAudioListener {
     private PianoView pianoView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {

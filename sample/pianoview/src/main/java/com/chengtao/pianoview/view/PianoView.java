@@ -6,8 +6,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.media.MediaPlayer;
-import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -15,9 +13,9 @@ import android.view.View;
 
 import com.chengtao.pianoview.entity.Piano;
 import com.chengtao.pianoview.entity.PianoKey;
-import com.chengtao.pianoview.impl.OnLoadMusicListener;
+import com.chengtao.pianoview.impl.OnLoadAudioListener;
 import com.chengtao.pianoview.impl.OnPianoClickListener;
-import com.chengtao.pianoview.utils.MusicUtils;
+import com.chengtao.pianoview.utils.AduioUtils;
 
 import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -42,8 +40,8 @@ public class PianoView extends View {
     private RectF square;
     //正方形北京颜色
     private String pianoColors[] = {"#C0C0C0", "#A52A2A","#FF8C00", "#FFFF00","#00FA9A", "#00CED1", "#4169E1", "#FFB6C1", "#FFEBCD"};
-    //播放器
-    private static MusicUtils utils;
+    //播放器工具
+    private AduioUtils utils;
 
 
     public PianoView(Context context) {
@@ -203,18 +201,13 @@ public class PianoView extends View {
      * 初始化OnLoadMusicListener接口
      * @param musicListener OnLoadMusicListener接口
      */
-    public void setOnLoadMusicListener(OnLoadMusicListener musicListener) {
+    public void setOnLoadMusicListener(OnLoadAudioListener musicListener) {
         //初始化播放器
-        if (utils == null){
-            utils = new MusicUtils(getContext(),musicListener);
-        }
-        if (!utils.isLoadFinish()){
-            try {
-                Log.e(TAG,"loadMusic");
-                utils.loadMusic(piano);
-            } catch (Exception e) {
-                Log.e(TAG,e.getMessage());
-            }
+        utils = AduioUtils.getInstance(getContext(),musicListener);
+        try {
+            utils.loadMusic(piano);
+        } catch (Exception e) {
+            Log.e(TAG,e.getMessage());
         }
     }
 }
