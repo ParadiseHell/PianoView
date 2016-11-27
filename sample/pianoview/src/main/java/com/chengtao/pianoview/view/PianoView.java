@@ -6,6 +6,8 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.media.MediaPlayer;
+import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -13,7 +15,9 @@ import android.view.View;
 
 import com.chengtao.pianoview.entity.Piano;
 import com.chengtao.pianoview.entity.PianoKey;
+import com.chengtao.pianoview.impl.OnLoadMusicListener;
 import com.chengtao.pianoview.impl.OnPianoClickListener;
+import com.chengtao.pianoview.utils.MusicUtils;
 
 import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -22,15 +26,25 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * Created by ChengTao on 2016-11-25.
  */
 
-public class PianoView extends View{
-    private Piano piano;
+public class PianoView extends View {
+    private final static String TAG = "PianoView";
+    //定义钢琴键
+    private final Piano piano;
     private ArrayList<PianoKey[]> whitePianoKeys;
     private ArrayList<PianoKey[]> blackPianoKeys;
+    //被点击过的钢琴键
     private CopyOnWriteArrayList<PianoKey> pressedKeys = new CopyOnWriteArrayList<>();
+    //接口
     private OnPianoClickListener listener;
+    //画笔
     private Paint paint;
+    //定义标识音名的正方形
     private RectF square;
+    //正方形北京颜色
     private String pianoColors[] = {"#C0C0C0", "#A52A2A","#FF8C00", "#FFFF00","#00FA9A", "#00CED1", "#4169E1", "#FFB6C1", "#FFEBCD"};
+    //播放器
+    private static MusicUtils utils;
+
 
     public PianoView(Context context) {
         this(context,null);
@@ -49,8 +63,9 @@ public class PianoView extends View{
         whitePianoKeys = piano.getWhitePiaoKeys();
         //获取黑键
         blackPianoKeys = piano.getBlackPianoKyes();
-        //
+        //初始化画笔
         paint.setStyle(Paint.Style.FILL);
+        //初始化正方形
         square = new RectF();
     }
 
@@ -151,6 +166,7 @@ public class PianoView extends View{
                     key.getKeyDrawable().setState(new int[]{android.R.attr.state_pressed});
                     key.setPressed(true);
                     invalidate(key.getKeyDrawable().getBounds());
+                    utils.playMusic(Piano.PianoKeyType.WHITE,key.getGroup(),key.getPositionOfGroup());
                     if (listener != null){
                         listener.onPianoClick(key.getType(),key.getVoice(),key.getGroup(),key.getPositionOfGroup());
                     }
@@ -164,6 +180,7 @@ public class PianoView extends View{
                 if (!key.isPressed() && key.contains(x,y)){
                     key.getKeyDrawable().setState(new int[]{android.R.attr.state_pressed});
                     invalidate(key.getKeyDrawable().getBounds());
+                    utils.playMusic(Piano.PianoKeyType.BLACK,key.getGroup(),key.getPositionOfGroup());
                     key.setPressed(true);
                     if (listener != null){
                         listener.onPianoClick(key.getType(),key.getVoice(),key.getGroup(),key.getPositionOfGroup());
@@ -180,5 +197,24 @@ public class PianoView extends View{
      */
     public void setOnPianoClickListener(OnPianoClickListener listener) {
         this.listener = listener;
+    }
+
+    /**
+     * 初始化OnLoadMusicListener接口
+     * @param musicListener OnLoadMusicListener接口
+     */
+    public void setOnLoadMusicListener(OnLoadMusicListener musicListener) {
+        //初始化播放器
+        if (utils == null){
+            utils = new MusicUtils(getContext(),musicListener);
+        }
+        if (!utils.isLoadFinish()){
+            try {
+                Log.e(TAG,"loadMusic");
+                utils.loadMusic(piano);
+            } catch (Exception e) {
+                Log.e(TAG,e.getMessage());
+            }
+        }
     }
 }
