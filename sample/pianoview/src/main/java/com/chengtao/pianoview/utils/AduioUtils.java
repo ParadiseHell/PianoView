@@ -21,6 +21,7 @@ import java.util.ArrayList;
 
 public class AduioUtils implements LoadAduioMessage {
     private final static String TAG = "AduioUtils";
+    private final static int MAX_STREAM = 20;
     private static AduioUtils instance = null;
     private final static int LOAD_START = 1;
     private final static int LOAD_FINISH = 2;
@@ -53,7 +54,7 @@ public class AduioUtils implements LoadAduioMessage {
     private AduioUtils(Context context, OnLoadAudioListener listener){
         this.context = context;
         this.listener = listener;
-        pool = new SoundPool(1, AudioManager.STREAM_MUSIC,100);
+        pool = new SoundPool(MAX_STREAM, AudioManager.STREAM_MUSIC,0);
     }
 
     public static AduioUtils getInstance(Context context, OnLoadAudioListener listener){
