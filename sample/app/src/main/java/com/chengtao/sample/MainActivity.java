@@ -33,18 +33,23 @@ public class MainActivity extends AppCompatActivity implements OnPianoClickListe
     }
 
     @Override
-    public void loadPianoMusicStart() {
+    public void loadPianoAudioStart() {
         Toast.makeText(getApplicationContext(),"loadPianoMusicStart",Toast.LENGTH_SHORT).show();
     }
 
     @Override
-    public void loadPianoMusicFinish() {
+    public void loadPianoAudioFinish() {
         Toast.makeText(getApplicationContext(),"loadPianoMusicFinish",Toast.LENGTH_SHORT).show();
     }
 
     @Override
-    public void loadPianoMusicError(Exception e) {
+    public void loadPianoAudioError(Exception e) {
         Toast.makeText(getApplicationContext(),"loadPianoMusicError",Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void loadPianoAudioProgress(int progress) {
+        Log.e("TAG","progress:"+progress);
     }
 
     @Override

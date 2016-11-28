@@ -17,6 +17,7 @@ import java.util.ArrayList;
  * 钢琴实体
  */
 public class Piano {
+    public final static int PIANO_NUMS = 88;
     private final static int BLACK_PIANO_KEY_GROUPS = 8;
     private final static int WHITE_PIANO_KEY_GROUPS = 9;
     private ArrayList<PianoKey[]> blackPianoKeys = new ArrayList<>(BLACK_PIANO_KEY_GROUPS);

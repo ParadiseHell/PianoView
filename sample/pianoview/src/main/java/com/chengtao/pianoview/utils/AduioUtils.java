@@ -26,6 +26,8 @@ public class AduioUtils implements LoadAduioMessage {
     private final static int LOAD_START = 1;
     private final static int LOAD_FINISH = 2;
     private final static int LOAD_ERROR = 3;
+    private final static int LOAD_PROGRESS = 4;
+    private final static int SEND_PROGRESS_MESSAGE_BREAK_TIME = 500;
     private SoundPool pool;
     private Context context;
     private OnLoadAudioListener listener;
@@ -39,13 +41,16 @@ public class AduioUtils implements LoadAduioMessage {
         public void handleMessage(Message msg) {
             switch (msg.what){
                 case LOAD_START:
-                    listener.loadPianoMusicStart();
+                    listener.loadPianoAudioStart();
                     break;
                 case LOAD_FINISH:
-                    listener.loadPianoMusicFinish();
+                    listener.loadPianoAudioFinish();
                     break;
                 case LOAD_ERROR:
-                    listener.loadPianoMusicError((Exception) msg.obj);
+                    listener.loadPianoAudioError((Exception) msg.obj);
+                    break;
+                case LOAD_PROGRESS:
+                    listener.loadPianoAudioProgress((int) msg.obj);
                     break;
             }
         }
@@ -78,11 +83,17 @@ public class AduioUtils implements LoadAduioMessage {
                 new Thread() {
                     @Override
                     public void run() {
+                        long currentTime = System.currentTimeMillis();
+                        int currentNum = 0;
                         sendStartMessage();
                         ArrayList<PianoKey[]> whiteKeys = piano.getWhitePianoKeys();
                         int whiteKeyPos = 0;
                         for (int i = 0; i < whiteKeys.size(); i++) {
                             for (PianoKey key : whiteKeys.get(i)) {
+                                if (System.currentTimeMillis() - currentTime >= SEND_PROGRESS_MESSAGE_BREAK_TIME){
+                                    sendProgressMessage((int)(((float)currentNum / (float) Piano.PIANO_NUMS) * 100f));
+                                    currentTime = System.currentTimeMillis();
+                                }
                                 try {
                                     whiteKeyMusics.put(whiteKeyPos, pool.load(context, key.getVoiceId(), 1));
                                     whiteKeyPos++;
@@ -90,12 +101,17 @@ public class AduioUtils implements LoadAduioMessage {
                                     sendErrorMessage(e);
                                     return;
                                 }
+                                currentNum++;
                             }
                         }
                         ArrayList<PianoKey[]> blackKeys = piano.getBlackPianoKeys();
                         int blackKeyPos = 0;
                         for (int i = 0; i < blackKeys.size(); i++) {
                             for (PianoKey key : blackKeys.get(i)) {
+                                if (System.currentTimeMillis() - currentTime >= SEND_PROGRESS_MESSAGE_BREAK_TIME){
+                                    sendProgressMessage((int)(((float)currentNum / (float) Piano.PIANO_NUMS) * 100f));
+                                    currentTime = System.currentTimeMillis();
+                                }
                                 try {
                                     blackKeyMusics.put(blackKeyPos, pool.load(context, key.getVoiceId(), 1));
                                     blackKeyPos++;
@@ -103,9 +119,11 @@ public class AduioUtils implements LoadAduioMessage {
                                     sendErrorMessage(e);
                                     return;
                                 }
+                                currentNum++;
                             }
                         }
                         isLoadFinish = true;
+                        sendProgressMessage(100);
                         sendFinishMessage();
                     }
                 }.start();
@@ -145,7 +163,7 @@ public class AduioUtils implements LoadAduioMessage {
             offset = 5;
         }
         int position = 7 * group - 5 + offset + positionOfGroup;
-        int result = pool.play(whiteKeyMusics.get(position),1f,1f,1,0,1f);
+        pool.play(whiteKeyMusics.get(position),1f,1f,1,0,1f);
     }
 
     /**
@@ -159,7 +177,7 @@ public class AduioUtils implements LoadAduioMessage {
             offset = 3;
         }
         int position = 4 * group - 3 + offset + positionOfGroup;
-        int result = pool.play(blackKeyMusics.get(position),1f,1f,1,0,1f);
+        pool.play(blackKeyMusics.get(position),1f,1f,1,0,1f);
     }
 
     /**
@@ -185,5 +203,10 @@ public class AduioUtils implements LoadAduioMessage {
     @Override
     public void sendErrorMessage(Exception e) {
         handler.sendMessage(Message.obtain(handler,LOAD_ERROR,e));
+    }
+
+    @Override
+    public void sendProgressMessage(int progress) {
+        handler.sendMessage(Message.obtain(handler,LOAD_PROGRESS,progress));
     }
 }

@@ -8,4 +8,5 @@ public interface LoadAduioMessage {
     void sendStartMessage();
     void sendFinishMessage();
     void sendErrorMessage(Exception e);
+    void sendProgressMessage(int progress);
 }
