@@ -78,7 +78,7 @@ public class AduioUtils implements LoadAduioMessage {
                     @Override
                     public void run() {
                         sendStartMessage();
-                        ArrayList<PianoKey[]> whiteKeys = piano.getWhitePiaoKeys();
+                        ArrayList<PianoKey[]> whiteKeys = piano.getWhitePianoKeys();
                         int whiteKeyPos = 0;
                         for (int i = 0; i < whiteKeys.size(); i++) {
                             for (PianoKey key : whiteKeys.get(i)) {
@@ -91,7 +91,7 @@ public class AduioUtils implements LoadAduioMessage {
                                 }
                             }
                         }
-                        ArrayList<PianoKey[]> blackKeys = piano.getBlackPianoKyes();
+                        ArrayList<PianoKey[]> blackKeys = piano.getBlackPianoKeys();
                         int blackKeyPos = 0;
                         for (int i = 0; i < blackKeys.size(); i++) {
                             for (PianoKey key : blackKeys.get(i)) {

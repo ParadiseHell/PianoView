@@ -19,13 +19,14 @@ import java.util.ArrayList;
 public class Piano {
     private final static int BLACK_PIANO_KEY_GROUPS = 8;
     private final static int WHITE_PIANO_KEY_GROUPS = 9;
-    private ArrayList<PianoKey[]> blackPianoKyes = new ArrayList<>(BLACK_PIANO_KEY_GROUPS);
-    private ArrayList<PianoKey[]> whitePiaoKeys = new ArrayList<>(WHITE_PIANO_KEY_GROUPS);
+    private ArrayList<PianoKey[]> blackPianoKeys = new ArrayList<>(BLACK_PIANO_KEY_GROUPS);
+    private ArrayList<PianoKey[]> whitePianoKeys = new ArrayList<>(WHITE_PIANO_KEY_GROUPS);
     private Context context;
     private int blackKeyWidth;
     private int blackKeyHeight;
     private int whiteKeyWidth;
     private int whiteKeyHeight;
+    private int pianoWith = 0;
     public Piano(Context context) {
         this.context = context;
         initPiano();
@@ -59,7 +60,7 @@ public class Piano {
                         keys0[j].setAreaOfKey(areaOfKey);
                         keys0[j].setVoice(PianoVoice.LA);
                     }
-                    blackPianoKyes.add(keys0);
+                    blackPianoKeys.add(keys0);
                     break;
                 default:
                     PianoKey[] keys1 = new PianoKey[5];
@@ -93,7 +94,7 @@ public class Piano {
                                 break;
                         }
                     }
-                    blackPianoKyes.add(keys1);
+                    blackPianoKeys.add(keys1);
                     break;
             }
         }
@@ -123,8 +124,9 @@ public class Piano {
                                 keys0[j].setLetterName("B0");
                                 break;
                         }
+                        pianoWith += whiteKeyWidth;
                     }
-                    whitePiaoKeys.add(keys0);
+                    whitePianoKeys.add(keys0);
                     break;
                 case 8:
                     PianoKey keys1[] = new PianoKey[1];
@@ -142,8 +144,9 @@ public class Piano {
                         keys1[j].setAreaOfKey(areaOfKey);
                         keys1[j].setVoice(PianoVoice.DO);
                         keys1[j].setLetterName("C8");
+                        pianoWith += whiteKeyWidth;
                     }
-                    whitePiaoKeys.add(keys1);
+                    whitePianoKeys.add(keys1);
                     break;
                 default:
                     PianoKey keys2[] = new PianoKey[7];
@@ -195,8 +198,9 @@ public class Piano {
                                 keys2[j].setLetterName("B"+i);
                                 break;
                         }
+                        pianoWith += whiteKeyWidth;
                     }
-                    whitePiaoKeys.add(keys2);
+                    whitePianoKeys.add(keys2);
                     break;
             }
         }
@@ -333,11 +337,15 @@ public class Piano {
         );
     }
 
-    public ArrayList<PianoKey[]> getWhitePiaoKeys() {
-        return whitePiaoKeys;
+    public ArrayList<PianoKey[]> getWhitePianoKeys() {
+        return whitePianoKeys;
     }
 
-    public ArrayList<PianoKey[]> getBlackPianoKyes() {
-        return blackPianoKyes;
+    public ArrayList<PianoKey[]> getBlackPianoKeys() {
+        return blackPianoKeys;
+    }
+
+    public int getPianoWith() {
+        return pianoWith;
     }
 }

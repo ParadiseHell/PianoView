@@ -29,6 +29,8 @@ public class PianoKey {
     private Rect[] areaOfKey;
     //音名（针对白键）
     private String letterName;
+    //被点击的手指的下标
+    private int fingerID = -1;
 
     public Piano.PianoKeyType getType() {
         return type;
@@ -119,5 +121,17 @@ public class PianoKey {
             }
         }
         return isContain;
+    }
+
+    public void resetFingerID(){
+        fingerID = -1;
+    }
+
+    public void setFingerID(int fingerIndex) {
+        this.fingerID = fingerIndex;
+    }
+
+    public int getFingerID() {
+        return fingerID;
     }
 }

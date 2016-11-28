@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.support.v4.view.MotionEventCompat;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -58,9 +59,9 @@ public class PianoView extends View {
         paint.setAntiAlias(true);
         piano = new Piano(context);
         //获取白键
-        whitePianoKeys = piano.getWhitePiaoKeys();
+        whitePianoKeys = piano.getWhitePianoKeys();
         //获取黑键
-        blackPianoKeys = piano.getBlackPianoKyes();
+        blackPianoKeys = piano.getBlackPianoKeys();
         //初始化画笔
         paint.setStyle(Paint.Style.FILL);
         //初始化正方形
@@ -100,16 +101,31 @@ public class PianoView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        switch (event.getAction()){
+        switch (MotionEventCompat.getActionMasked(event)){
+            //当第一个手指点击按键的时候
             case MotionEvent.ACTION_DOWN:
-                handleDown(0,event);
+                handleDown(MotionEventCompat.getActionIndex(event),event);
                 break;
+            //当手指在键盘上滑动的时候
             case MotionEvent.ACTION_MOVE:
                 for (int i = 0; i < event.getPointerCount(); i++){
                     handleMove(i,event);
                 }
+                for (int i = 0; i < event.getPointerCount(); i++){
+                    handleDown(i,event);
+                }
                 break;
+            //多点触控，当其他手指点击键盘的手
+            case MotionEvent.ACTION_POINTER_DOWN:
+                handleDown(MotionEventCompat.getActionIndex(event),event);
+                break;
+            //多点触控，当其他手指抬起的时候
+            case MotionEvent.ACTION_POINTER_UP:
+                handlePointerUp(event.getPointerId(MotionEventCompat.getActionIndex(event)));
+                break;
+            //但最后一个手指抬起的时候
             case MotionEvent.ACTION_UP:
+                Log.e(TAG,"ACTION_UP:"+MotionEventCompat.getActionIndex(event));
                 handleUp();
                 break;
         }
@@ -117,36 +133,55 @@ public class PianoView extends View {
     }
 
     /**
-     * 处理滑动
-     * @param which 那个触摸点
-     * @param event 事件对象
+     * 处理多点触控时，手指抬起事件
+     * @param pointerId 触摸点ID
      */
-    private void handleMove(int which, MotionEvent event) {
-        int x = (int)event.getX(which);
-        int y = (int)event.getY(which);
+    private void handlePointerUp(int pointerId) {
         for (PianoKey key : pressedKeys){
-            if (!key.contains(x,y)){
+            if (key.getFingerID() == pointerId){
                 key.setPressed(false);
+                key.resetFingerID();
                 key.getKeyDrawable().setState(new int[] {-android.R.attr.state_pressed});
                 invalidate(key.getKeyDrawable().getBounds());
                 pressedKeys.remove(key);
+                break;
             }
-        }
-        for (int i = 0; i < event.getPointerCount(); i++){
-            handleDown(i,event);
         }
     }
 
     /**
-     * 处理抬起事件
+     * 处理滑动
+     * @param which 触摸点下标
+     * @param event 事件对象
+     */
+    private void handleMove(int which, MotionEvent event) {
+        int x = (int)event.getX(which) + this.getScrollX();
+        int y = (int)event.getY(which);
+        for (PianoKey key : pressedKeys){
+            if (key.getFingerID() == event.getPointerId(which)){
+                if (!key.contains(x,y)){
+                    key.getKeyDrawable().setState(new int[] {-android.R.attr.state_pressed});
+                    invalidate(key.getKeyDrawable().getBounds());
+                    key.setPressed(false);
+                    key.resetFingerID();
+                    pressedKeys.remove(key);
+                }
+            }
+        }
+    }
+
+    /**
+     * 处理最后一个手指抬起事件
      */
     private void handleUp() {
-        for (PianoKey key : pressedKeys){
-            key.getKeyDrawable().setState(new int[]{-android.R.attr.state_pressed});
-            key.setPressed(false);
-            invalidate(key.getKeyDrawable().getBounds());
+        if (pressedKeys.size() > 0){
+            for (PianoKey key : pressedKeys){
+                key.getKeyDrawable().setState(new int[]{-android.R.attr.state_pressed});
+                key.setPressed(false);
+                invalidate(key.getKeyDrawable().getBounds());
+            }
+            pressedKeys.clear();
         }
-        pressedKeys.clear();
     }
 
     /**
@@ -155,16 +190,18 @@ public class PianoView extends View {
      * @param event 事件对象
      */
     private void handleDown(int which, MotionEvent event) {
-        int x = (int)event.getX(which);
+        int x = (int)event.getX(which) + this.getScrollX();
         int y = (int)event.getY(which);
         //检查白键
         for (int i = 0; i < whitePianoKeys.size(); i++){
             for (PianoKey key : whitePianoKeys.get(i)){
                 if (!key.isPressed() && key.contains(x,y)){
+                    Log.e(TAG,"WHITE_PRESS");
                     key.getKeyDrawable().setState(new int[]{android.R.attr.state_pressed});
-                    key.setPressed(true);
                     invalidate(key.getKeyDrawable().getBounds());
                     utils.playMusic(Piano.PianoKeyType.WHITE,key.getGroup(),key.getPositionOfGroup());
+                    key.setPressed(true);
+                    key.setFingerID(event.getPointerId(which));
                     if (listener != null){
                         listener.onPianoClick(key.getType(),key.getVoice(),key.getGroup(),key.getPositionOfGroup());
                     }
@@ -176,10 +213,12 @@ public class PianoView extends View {
         for (int i = 0; i < blackPianoKeys.size(); i++){
             for (PianoKey key : blackPianoKeys.get(i)){
                 if (!key.isPressed() && key.contains(x,y)){
+                    Log.e(TAG,"BLACK_PRESS");
                     key.getKeyDrawable().setState(new int[]{android.R.attr.state_pressed});
                     invalidate(key.getKeyDrawable().getBounds());
                     utils.playMusic(Piano.PianoKeyType.BLACK,key.getGroup(),key.getPositionOfGroup());
                     key.setPressed(true);
+                    key.setFingerID(event.getPointerId(which));
                     if (listener != null){
                         listener.onPianoClick(key.getType(),key.getVoice(),key.getGroup(),key.getPositionOfGroup());
                     }
@@ -210,4 +249,13 @@ public class PianoView extends View {
             Log.e(TAG,e.getMessage());
         }
     }
+
+    public int getPianoWidth(){
+        return piano.getPianoWith();
+    }
+
+    public void moveToLeft(int moveX){
+        this.scrollBy(moveX,0);
+    }
+
 }
