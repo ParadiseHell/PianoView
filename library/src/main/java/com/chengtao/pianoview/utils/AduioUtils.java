@@ -5,7 +5,6 @@ import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.util.SparseIntArray;
 
 import com.chengtao.pianoview.entity.Piano;
