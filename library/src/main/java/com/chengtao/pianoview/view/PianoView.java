@@ -20,7 +20,7 @@ import com.chengtao.pianoview.entity.Piano;
 import com.chengtao.pianoview.entity.PianoKey;
 import com.chengtao.pianoview.impl.OnLoadAudioListener;
 import com.chengtao.pianoview.impl.OnPianoClickListener;
-import com.chengtao.pianoview.utils.AduioUtils;
+import com.chengtao.pianoview.utils.AudioUtils;
 
 import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -46,7 +46,7 @@ public class PianoView extends View {
     //正方形北京颜色
     private String pianoColors[] = {"#C0C0C0", "#A52A2A","#FF8C00", "#FFFF00","#00FA9A", "#00CED1", "#4169E1", "#FFB6C1", "#FFEBCD"};
     //播放器工具
-    private AduioUtils utils = null;
+    private AudioUtils utils = null;
     //上下文
     private Context context;
     //布局的宽度
@@ -116,7 +116,7 @@ public class PianoView extends View {
         }
         if (utils == null){
             //初始化播放器
-            utils = AduioUtils.getInstance(getContext(),musicListener);
+            utils = AudioUtils.getInstance(getContext(),musicListener);
             try {
                 utils.loadMusic(piano);
             } catch (Exception e) {
@@ -161,7 +161,7 @@ public class PianoView extends View {
         }
         //设置缩放比例
         scale = (float) (height - getPaddingTop() - getPaddingBottom()) / (float) dpToPx(whiteKeyHeight);
-        layoutWidth = pxToDp(width - getPaddingLeft() - getPaddingRight());
+        layoutWidth = width - getPaddingLeft() - getPaddingRight();
         //设置布局高度和宽度
         setMeasuredDimension(width,height);
     }
@@ -317,11 +317,21 @@ public class PianoView extends View {
     }
 
     /**
-     * 移动（左正右负）
-     * @param moveX 移动距离
+     * 移动
+     * @param progress 移动百分比
      */
-    public void scroll(int moveX){
-        this.scrollBy(moveX,0);
+    public void scroll(int progress){
+        switch (progress){
+            case 0:
+                this.scrollTo(0,0);
+                break;
+            case 100:
+                this.scrollTo(getPianoWidth() - getLayoutWidth() ,0);
+                break;
+            default:
+                this.scrollTo((int)(((float)progress / 100f) * (float)(getPianoWidth() - getLayoutWidth())),0);
+                break;
+        }
     }
 
     /**
@@ -332,16 +342,6 @@ public class PianoView extends View {
     private int dpToPx(int dp) {
         DisplayMetrics displayMetrics = getContext().getResources().getDisplayMetrics();
         return Math.round(dp * (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT));
-    }
-
-    /**
-     * 将px装换成dp
-     * @param px px值
-     * @return dp值
-     */
-    public int pxToDp(int px) {
-        DisplayMetrics displayMetrics = getContext().getResources().getDisplayMetrics();
-        return Math.round(px / (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT));
     }
 
     /**

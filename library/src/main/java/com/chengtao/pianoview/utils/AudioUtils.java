@@ -1,6 +1,5 @@
 package com.chengtao.pianoview.utils;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.media.AudioManager;
 import android.media.SoundPool;
@@ -10,33 +9,49 @@ import android.util.SparseIntArray;
 
 import com.chengtao.pianoview.entity.Piano;
 import com.chengtao.pianoview.entity.PianoKey;
-import com.chengtao.pianoview.impl.LoadAduioMessage;
+import com.chengtao.pianoview.impl.LoadAudioMessage;
 import com.chengtao.pianoview.impl.OnLoadAudioListener;
 
 import java.util.ArrayList;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by ChengTao on 2016-11-26.
  */
 
-public class AduioUtils implements LoadAduioMessage {
-    private final static String TAG = "AduioUtils";
+/**
+ * 音频工具类
+ */
+public class AudioUtils implements LoadAudioMessage {
+    private final static String TAG = "AudioUtils";
+    //线程池,用于加载和播放音频
+    private ExecutorService service = Executors.newCachedThreadPool();
+    //最大音频数目
     private final static int MAX_STREAM = 20;
-    @SuppressLint("StaticFieldLeak")
-    private static AduioUtils instance = null;
+    private static AudioUtils instance = null;
+    //消息ID
     private final static int LOAD_START = 1;
     private final static int LOAD_FINISH = 2;
     private final static int LOAD_ERROR = 3;
     private final static int LOAD_PROGRESS = 4;
+    //发送进度的间隙时间
     private final static int SEND_PROGRESS_MESSAGE_BREAK_TIME = 500;
+    //音频池，用于播放音频
     private SoundPool pool;
+    //上下文
     private Context context;
+    //加载音频接口
     private OnLoadAudioListener listener;
+    //存放黑键和白键的音频加载后的ID的集合
     private SparseIntArray whiteKeyMusics = new SparseIntArray();
     private SparseIntArray blackKeyMusics = new SparseIntArray();
+    //是否加载成功
     private boolean isLoadFinish = false;
+    //是否正在加载
     private boolean isLoading = false;
-    //
+    //用于处理进度消息
     private Handler handler = new Handler(){
         @Override
         public void handleMessage(Message msg) {
@@ -57,23 +72,30 @@ public class AduioUtils implements LoadAduioMessage {
         }
     };
 
-    private AduioUtils(Context context, OnLoadAudioListener listener){
+    @SuppressWarnings("deprecation")
+    private AudioUtils(Context context, OnLoadAudioListener listener){
         this.context = context;
         this.listener = listener;
         pool = new SoundPool(MAX_STREAM, AudioManager.STREAM_MUSIC,0);
     }
 
-    public static AduioUtils getInstance(Context context, OnLoadAudioListener listener){
+    //单例模式，只返回一个工具实例
+    public static AudioUtils getInstance(Context context, OnLoadAudioListener listener){
         if (instance == null){
-            synchronized (AduioUtils.class){
+            synchronized (AudioUtils.class){
                 if (instance == null){
-                    instance = new AduioUtils(context,listener);
+                    instance = new AudioUtils(context,listener);
                 }
             }
         }
         return instance;
     }
 
+    /**
+     * 记载音乐
+     * @param piano 钢琴实体
+     * @throws Exception
+     */
     public void loadMusic(final Piano piano) throws Exception {
         if (pool == null){
             throw new Exception("请初始化SoundPool");
@@ -82,7 +104,7 @@ public class AduioUtils implements LoadAduioMessage {
             if (listener != null) {
                 if (!isLoading && !isLoadFinish) {
                     isLoading = true;
-                    new Thread() {
+                    service.execute(new Runnable() {
                         @Override
                         public void run() {
                             long currentTime = System.currentTimeMillis();
@@ -100,6 +122,7 @@ public class AduioUtils implements LoadAduioMessage {
                                         whiteKeyMusics.put(whiteKeyPos, pool.load(context, key.getVoiceId(), 1));
                                         whiteKeyPos++;
                                     } catch (Exception e) {
+                                        isLoading = false;
                                         sendErrorMessage(e);
                                         return;
                                     }
@@ -118,6 +141,7 @@ public class AduioUtils implements LoadAduioMessage {
                                         blackKeyMusics.put(blackKeyPos, pool.load(context, key.getVoiceId(), 1));
                                         blackKeyPos++;
                                     } catch (Exception e) {
+                                        isLoading = false;
                                         sendErrorMessage(e);
                                         return;
                                     }
@@ -128,7 +152,7 @@ public class AduioUtils implements LoadAduioMessage {
                             sendProgressMessage(100);
                             sendFinishMessage();
                         }
-                    }.start();
+                    });
                 }
             } else {
                 throw new Exception("请实现OnLoadMusicListener接口");
@@ -142,16 +166,21 @@ public class AduioUtils implements LoadAduioMessage {
      * @param group 组数，从0开始
      * @param positionOfGroup 组内位置
      */
-    public void playMusic(Piano.PianoKeyType type,int group,int positionOfGroup){
+    public void playMusic(final Piano.PianoKeyType type, final int group, final int positionOfGroup){
         if (isLoadFinish) {
-            switch (type) {
-                case BLACK:
-                    playBlackKeyMusic(group, positionOfGroup);
-                    break;
-                case WHITE:
-                    playWhiteKeyMusic(group, positionOfGroup);
-                    break;
-            }
+            service.execute(new Runnable() {
+                @Override
+                public void run() {
+                    switch (type) {
+                        case BLACK:
+                            playBlackKeyMusic(group, positionOfGroup);
+                            break;
+                        case WHITE:
+                            playWhiteKeyMusic(group, positionOfGroup);
+                            break;
+                    }
+                }
+            });
         }
     }
 

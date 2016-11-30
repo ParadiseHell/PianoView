@@ -1,5 +1,6 @@
 package com.chengtao.sample;
 
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,7 +15,6 @@ import com.chengtao.pianoview.view.PianoView;
 public class MainActivity extends AppCompatActivity implements OnPianoClickListener,OnLoadAudioListener ,SeekBar.OnSeekBarChangeListener{
     private PianoView pianoView;
     private SeekBar seekBar;
-    private int preProgress = 0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,8 +54,7 @@ public class MainActivity extends AppCompatActivity implements OnPianoClickListe
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-        pianoView.scroll((int)(((i - preProgress) / 100f) * (float)pianoView.getPianoWidth()));
-        preProgress = i;
+        pianoView.scroll(i);
     }
 
     @Override
