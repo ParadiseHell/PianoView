@@ -6,12 +6,16 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.drawable.Drawable;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.MotionEventCompat;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
+import com.chengtao.pianoview.R;
 import com.chengtao.pianoview.entity.Piano;
 import com.chengtao.pianoview.entity.PianoKey;
 import com.chengtao.pianoview.impl.OnLoadAudioListener;
@@ -28,7 +32,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class PianoView extends View {
     private final static String TAG = "PianoView";
     //定义钢琴键
-    private final Piano piano;
+    private Piano piano = null;
     private ArrayList<PianoKey[]> whitePianoKeys;
     private ArrayList<PianoKey[]> blackPianoKeys;
     //被点击过的钢琴键
@@ -42,9 +46,17 @@ public class PianoView extends View {
     //正方形北京颜色
     private String pianoColors[] = {"#C0C0C0", "#A52A2A","#FF8C00", "#FFFF00","#00FA9A", "#00CED1", "#4169E1", "#FFB6C1", "#FFEBCD"};
     //播放器工具
-    private AduioUtils utils;
+    private AduioUtils utils = null;
+    //上下文
+    private Context context;
+    //布局的宽度
+    private int layoutWidth = 0;
+    //缩放比例
+    private float scale = 0;
+    //音频加载接口
+    private OnLoadAudioListener musicListener;
 
-
+    //构造函数
     public PianoView(Context context) {
         this(context,null);
     }
@@ -55,13 +67,9 @@ public class PianoView extends View {
 
     public PianoView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        this.context = context;
         paint = new Paint();
         paint.setAntiAlias(true);
-        piano = new Piano(context);
-        //获取白键
-        whitePianoKeys = piano.getWhitePianoKeys();
-        //获取黑键
-        blackPianoKeys = piano.getBlackPianoKeys();
         //初始化画笔
         paint.setStyle(Paint.Style.FILL);
         //初始化正方形
@@ -70,11 +78,20 @@ public class PianoView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
+        //初始化钢琴
+        if (piano == null){
+            piano = new Piano(context,scale);
+            //获取白键
+            whitePianoKeys = piano.getWhitePianoKeys();
+            //获取黑键
+            blackPianoKeys = piano.getBlackPianoKeys();
+        }
         //初始化白键
         for (int i = 0; i < whitePianoKeys.size(); i++){
             for (PianoKey key : whitePianoKeys.get(i)){
                 paint.setColor(Color.parseColor(pianoColors[i]));
                 key.getKeyDrawable().draw(canvas);
+                //初始化音名区域
                 Rect r = key.getKeyDrawable().getBounds();
                 int sideLength = (r.right - r.left) / 2;
                 int left = r.left + sideLength / 2;
@@ -97,6 +114,56 @@ public class PianoView extends View {
                 key.getKeyDrawable().draw(canvas);
             }
         }
+        if (utils == null){
+            //初始化播放器
+            utils = AduioUtils.getInstance(getContext(),musicListener);
+            try {
+                utils.loadMusic(piano);
+            } catch (Exception e) {
+                Log.e(TAG,e.getMessage());
+            }
+        }
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        Drawable whiteKeyDrawable = ContextCompat.getDrawable(context, R.drawable.white_piano_key);
+        //最小高度
+        int whiteKeyHeight = whiteKeyDrawable.getMinimumHeight() / 2;
+        //最小宽度
+        int whiteKeyWidth = (whiteKeyDrawable.getMinimumHeight() / 2) * 7;
+        //获取布局中的高度和宽度及其模式
+        int widthMode = MeasureSpec.getMode(widthMeasureSpec);
+        int width = MeasureSpec.getSize(widthMeasureSpec);
+        int heightMode = MeasureSpec.getMode(heightMeasureSpec);
+        int height = MeasureSpec.getSize(heightMeasureSpec);
+        //设置宽度
+        switch (widthMode){
+            case MeasureSpec.EXACTLY:
+                break;
+            case MeasureSpec.AT_MOST:
+                width = Math.min(width,whiteKeyWidth);
+                break;
+            case MeasureSpec.UNSPECIFIED:
+                width = whiteKeyWidth;
+                break;
+        }
+        //设置高度
+        switch (heightMode){
+            case MeasureSpec.EXACTLY:
+                break;
+            case MeasureSpec.AT_MOST:
+                height = Math.min(height,whiteKeyHeight);
+                break;
+            case MeasureSpec.UNSPECIFIED:
+                height = whiteKeyHeight;
+                break;
+        }
+        //设置缩放比例
+        scale = (float) (height - getPaddingTop() - getPaddingBottom()) / (float) dpToPx(whiteKeyHeight);
+        layoutWidth = pxToDp(width - getPaddingLeft() - getPaddingRight());
+        //设置布局高度和宽度
+        setMeasuredDimension(width,height);
     }
 
     @Override
@@ -196,7 +263,6 @@ public class PianoView extends View {
         for (int i = 0; i < whitePianoKeys.size(); i++){
             for (PianoKey key : whitePianoKeys.get(i)){
                 if (!key.isPressed() && key.contains(x,y)){
-                    Log.e(TAG,"WHITE_PRESS");
                     key.getKeyDrawable().setState(new int[]{android.R.attr.state_pressed});
                     invalidate(key.getKeyDrawable().getBounds());
                     utils.playMusic(Piano.PianoKeyType.WHITE,key.getGroup(),key.getPositionOfGroup());
@@ -213,7 +279,6 @@ public class PianoView extends View {
         for (int i = 0; i < blackPianoKeys.size(); i++){
             for (PianoKey key : blackPianoKeys.get(i)){
                 if (!key.isPressed() && key.contains(x,y)){
-                    Log.e(TAG,"BLACK_PRESS");
                     key.getKeyDrawable().setState(new int[]{android.R.attr.state_pressed});
                     invalidate(key.getKeyDrawable().getBounds());
                     utils.playMusic(Piano.PianoKeyType.BLACK,key.getGroup(),key.getPositionOfGroup());
@@ -241,21 +306,60 @@ public class PianoView extends View {
      * @param musicListener OnLoadMusicListener接口
      */
     public void setOnLoadMusicListener(OnLoadAudioListener musicListener) {
-        //初始化播放器
-        utils = AduioUtils.getInstance(getContext(),musicListener);
-        try {
-            utils.loadMusic(piano);
-        } catch (Exception e) {
-            Log.e(TAG,e.getMessage());
-        }
+        this.musicListener = musicListener;
     }
 
     public int getPianoWidth(){
-        return piano.getPianoWith();
+        if (piano != null){
+            return piano.getPianoWith();
+        }
+        return 0;
     }
 
-    public void moveToLeft(int moveX){
+    /**
+     * 移动（左正右负）
+     * @param moveX 移动距离
+     */
+    public void scroll(int moveX){
         this.scrollBy(moveX,0);
     }
 
+    /**
+     * 将dp装换成px
+     * @param dp dp值
+     * @return px值
+     */
+    private int dpToPx(int dp) {
+        DisplayMetrics displayMetrics = getContext().getResources().getDisplayMetrics();
+        return Math.round(dp * (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT));
+    }
+
+    /**
+     * 将px装换成dp
+     * @param px px值
+     * @return dp值
+     */
+    public int pxToDp(int px) {
+        DisplayMetrics displayMetrics = getContext().getResources().getDisplayMetrics();
+        return Math.round(px / (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT));
+    }
+
+    /**
+     * 获取钢琴布局的实际宽度
+     * @return 钢琴布局的实际宽度
+     */
+    public int getLayoutWidth() {
+        return layoutWidth;
+    }
+
+    /**
+     * 设置显示音名的矩形的颜色<br>
+     *     <b>注:一共9中颜色</b>
+     * @param pianoColors 颜色数组，长度为9
+     */
+    public void setPianoColors(String[] pianoColors) {
+        if (pianoColors.length == 9){
+            this.pianoColors = pianoColors;
+        }
+    }
 }

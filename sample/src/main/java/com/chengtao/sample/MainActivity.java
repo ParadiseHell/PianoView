@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements OnPianoClickListe
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-        pianoView.moveToLeft((int)(((i - preProgress) / 100f) * (float)pianoView.getPianoWidth()));
+        pianoView.scroll((int)(((i - preProgress) / 100f) * (float)pianoView.getPianoWidth()));
         preProgress = i;
     }
 

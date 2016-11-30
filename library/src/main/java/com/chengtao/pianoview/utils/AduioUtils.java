@@ -1,5 +1,6 @@
 package com.chengtao.pianoview.utils;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.media.AudioManager;
 import android.media.SoundPool;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 public class AduioUtils implements LoadAduioMessage {
     private final static String TAG = "AduioUtils";
     private final static int MAX_STREAM = 20;
+    @SuppressLint("StaticFieldLeak")
     private static AduioUtils instance = null;
     private final static int LOAD_START = 1;
     private final static int LOAD_FINISH = 2;
@@ -76,59 +78,61 @@ public class AduioUtils implements LoadAduioMessage {
         if (pool == null){
             throw new Exception("请初始化SoundPool");
         }
-        if (listener != null){
-            if (!isLoading && !isLoadFinish) {
-                isLoading = true;
-                new Thread() {
-                    @Override
-                    public void run() {
-                        long currentTime = System.currentTimeMillis();
-                        int currentNum = 0;
-                        sendStartMessage();
-                        ArrayList<PianoKey[]> whiteKeys = piano.getWhitePianoKeys();
-                        int whiteKeyPos = 0;
-                        for (int i = 0; i < whiteKeys.size(); i++) {
-                            for (PianoKey key : whiteKeys.get(i)) {
-                                if (System.currentTimeMillis() - currentTime >= SEND_PROGRESS_MESSAGE_BREAK_TIME){
-                                    sendProgressMessage((int)(((float)currentNum / (float) Piano.PIANO_NUMS) * 100f));
-                                    currentTime = System.currentTimeMillis();
+        if (piano != null) {
+            if (listener != null) {
+                if (!isLoading && !isLoadFinish) {
+                    isLoading = true;
+                    new Thread() {
+                        @Override
+                        public void run() {
+                            long currentTime = System.currentTimeMillis();
+                            int currentNum = 0;
+                            sendStartMessage();
+                            ArrayList<PianoKey[]> whiteKeys = piano.getWhitePianoKeys();
+                            int whiteKeyPos = 0;
+                            for (int i = 0; i < whiteKeys.size(); i++) {
+                                for (PianoKey key : whiteKeys.get(i)) {
+                                    if (System.currentTimeMillis() - currentTime >= SEND_PROGRESS_MESSAGE_BREAK_TIME) {
+                                        sendProgressMessage((int) (((float) currentNum / (float) Piano.PIANO_NUMS) * 100f));
+                                        currentTime = System.currentTimeMillis();
+                                    }
+                                    try {
+                                        whiteKeyMusics.put(whiteKeyPos, pool.load(context, key.getVoiceId(), 1));
+                                        whiteKeyPos++;
+                                    } catch (Exception e) {
+                                        sendErrorMessage(e);
+                                        return;
+                                    }
+                                    currentNum++;
                                 }
-                                try {
-                                    whiteKeyMusics.put(whiteKeyPos, pool.load(context, key.getVoiceId(), 1));
-                                    whiteKeyPos++;
-                                } catch (Exception e) {
-                                    sendErrorMessage(e);
-                                    return;
-                                }
-                                currentNum++;
                             }
-                        }
-                        ArrayList<PianoKey[]> blackKeys = piano.getBlackPianoKeys();
-                        int blackKeyPos = 0;
-                        for (int i = 0; i < blackKeys.size(); i++) {
-                            for (PianoKey key : blackKeys.get(i)) {
-                                if (System.currentTimeMillis() - currentTime >= SEND_PROGRESS_MESSAGE_BREAK_TIME){
-                                    sendProgressMessage((int)(((float)currentNum / (float) Piano.PIANO_NUMS) * 100f));
-                                    currentTime = System.currentTimeMillis();
+                            ArrayList<PianoKey[]> blackKeys = piano.getBlackPianoKeys();
+                            int blackKeyPos = 0;
+                            for (int i = 0; i < blackKeys.size(); i++) {
+                                for (PianoKey key : blackKeys.get(i)) {
+                                    if (System.currentTimeMillis() - currentTime >= SEND_PROGRESS_MESSAGE_BREAK_TIME) {
+                                        sendProgressMessage((int) (((float) currentNum / (float) Piano.PIANO_NUMS) * 100f));
+                                        currentTime = System.currentTimeMillis();
+                                    }
+                                    try {
+                                        blackKeyMusics.put(blackKeyPos, pool.load(context, key.getVoiceId(), 1));
+                                        blackKeyPos++;
+                                    } catch (Exception e) {
+                                        sendErrorMessage(e);
+                                        return;
+                                    }
+                                    currentNum++;
                                 }
-                                try {
-                                    blackKeyMusics.put(blackKeyPos, pool.load(context, key.getVoiceId(), 1));
-                                    blackKeyPos++;
-                                } catch (Exception e) {
-                                    sendErrorMessage(e);
-                                    return;
-                                }
-                                currentNum++;
                             }
+                            isLoadFinish = true;
+                            sendProgressMessage(100);
+                            sendFinishMessage();
                         }
-                        isLoadFinish = true;
-                        sendProgressMessage(100);
-                        sendFinishMessage();
-                    }
-                }.start();
+                    }.start();
+                }
+            } else {
+                throw new Exception("请实现OnLoadMusicListener接口");
             }
-        }else {
-            throw new Exception("请实现OnLoadMusicListener接口");
         }
     }
 
