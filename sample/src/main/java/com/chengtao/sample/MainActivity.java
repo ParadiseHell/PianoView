@@ -1,7 +1,7 @@
 package com.chengtao.sample;
 
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
+import android.app.Activity;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.SeekBar;
@@ -12,11 +12,11 @@ import com.chengtao.pianoview.impl.OnLoadAudioListener;
 import com.chengtao.pianoview.impl.OnPianoClickListener;
 import com.chengtao.pianoview.view.PianoView;
 
-public class MainActivity extends AppCompatActivity implements OnPianoClickListener,OnLoadAudioListener ,SeekBar.OnSeekBarChangeListener{
+public class MainActivity extends Activity implements OnPianoClickListener,OnLoadAudioListener ,SeekBar.OnSeekBarChangeListener{
     private PianoView pianoView;
     private SeekBar seekBar;
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         pianoView = (PianoView) findViewById(R.id.pv);
@@ -24,6 +24,7 @@ public class MainActivity extends AppCompatActivity implements OnPianoClickListe
         pianoView.setOnPianoClickListener(this);
         pianoView.setOnLoadMusicListener(this);
         seekBar.setOnSeekBarChangeListener(this);
+        Log.e("TAG","onCreate");
     }
 
     @Override
@@ -65,5 +66,18 @@ public class MainActivity extends AppCompatActivity implements OnPianoClickListe
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
 
+    }
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        /**
+         * 设置为横屏
+         */
+        if(getRequestedOrientation()!= ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE){
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        }
+        super.onResume();
     }
 }

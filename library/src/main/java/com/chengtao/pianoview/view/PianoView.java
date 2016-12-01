@@ -7,6 +7,8 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.MotionEventCompat;
 import android.util.AttributeSet;
@@ -55,6 +57,11 @@ public class PianoView extends View {
     private float scale = 0;
     //音频加载接口
     private OnLoadAudioListener musicListener;
+    //钢琴被滑动的一些属性
+    private int progress = 0;
+    private final static int INIT_SCROLL = 1;
+    private final static int NOT_INIT_SCROLL = 0;
+    private int initScroll = NOT_INIT_SCROLL;
 
     //构造函数
     public PianoView(Context context) {
@@ -78,8 +85,10 @@ public class PianoView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
+        Log.e(TAG,"onDraw");
         //初始化钢琴
         if (piano == null){
+            Log.e(TAG,"初始化钢琴");
             piano = new Piano(context,scale);
             //获取白键
             whitePianoKeys = piano.getWhitePianoKeys();
@@ -88,6 +97,7 @@ public class PianoView extends View {
         }
         //初始化白键
         for (int i = 0; i < whitePianoKeys.size(); i++){
+            Log.e(TAG,"初始化白键");
             for (PianoKey key : whitePianoKeys.get(i)){
                 paint.setColor(Color.parseColor(pianoColors[i]));
                 key.getKeyDrawable().draw(canvas);
@@ -110,12 +120,14 @@ public class PianoView extends View {
         }
         //初始化黑键
         for (int i = 0; i < blackPianoKeys.size(); i++){
+            Log.e(TAG,"初始化黑键");
             for (PianoKey key : blackPianoKeys.get(i)){
                 key.getKeyDrawable().draw(canvas);
             }
         }
         if (utils == null){
             //初始化播放器
+            Log.e(TAG,"初始化播放器");
             utils = AudioUtils.getInstance(getContext(),musicListener);
             try {
                 utils.loadMusic(piano);
@@ -123,10 +135,16 @@ public class PianoView extends View {
                 Log.e(TAG,e.getMessage());
             }
         }
+        if (initScroll == INIT_SCROLL){
+            scroll(progress);
+            Log.e(TAG,"progress:"+progress);
+            initScroll = NOT_INIT_SCROLL;
+        }
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        Log.e(TAG,"onMeasure");
         Drawable whiteKeyDrawable = ContextCompat.getDrawable(context, R.drawable.white_piano_key);
         //最小高度
         int whiteKeyHeight = whiteKeyDrawable.getMinimumHeight() / 2;
@@ -332,6 +350,7 @@ public class PianoView extends View {
                 this.scrollTo((int)(((float)progress / 100f) * (float)(getPianoWidth() - getLayoutWidth())),0);
                 break;
         }
+        this.progress = progress;
     }
 
     /**
@@ -360,6 +379,44 @@ public class PianoView extends View {
     public void setPianoColors(String[] pianoColors) {
         if (pianoColors.length == 9){
             this.pianoColors = pianoColors;
+        }
+    }
+
+    @Override
+    protected Parcelable onSaveInstanceState() {
+        Parcelable parcelable = super.onSaveInstanceState();
+        PianoViewSaveState state = new PianoViewSaveState(parcelable);
+        state.progress = this.progress;
+        state.initScroll = INIT_SCROLL;
+        return state;
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Parcelable state) {
+        if (!(state instanceof PianoViewSaveState)){
+            super.onRestoreInstanceState(state);
+            return;
+        }
+        PianoViewSaveState pianoViewSaveState = (PianoViewSaveState) state;
+        super.onRestoreInstanceState(pianoViewSaveState.getSuperState());
+        this.progress = pianoViewSaveState.progress;
+        this.initScroll = pianoViewSaveState.initScroll;
+    }
+
+    /**
+     * 用于存储Activity重启的保存钢琴一些属性的类
+     */
+    private class PianoViewSaveState extends BaseSavedState{
+        private int progress;
+        private int initScroll;
+        PianoViewSaveState(Parcel source) {
+            super(source);
+            this.progress = source.readInt();
+            this.initScroll = source.readInt();
+        }
+
+        PianoViewSaveState(Parcelable superState) {
+            super(superState);
         }
     }
 }
