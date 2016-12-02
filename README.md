@@ -10,7 +10,7 @@ A custom view on Android,which can help you easily to create a piano on Android.
 - Two interface,which can help user to use this view better.
 - Mutil-Touch.
 
-# Gradle Dependency
+## Gradle Dependency
 
 Add it in your root `build.gradle` at the end of repositories:
 
@@ -26,7 +26,7 @@ Add the dependency:
 
 ```gradle
 dependencies {
-        compile 'com.github.ParadiseHell:PianoView:v1.1.0'
+        compile 'com.github.ParadiseHell:PianoView:v1.1.1'
 }
 ```
 
@@ -51,7 +51,7 @@ In the `Activity`:
 public class MainActivity extends Activity implements OnPianoClickListener,OnLoadAudioListener
 ```
 
-Introduce of the two interfaces:
+Introduce of the `two interfaces`:
 
 - `OnPianoClickListener`:
 
@@ -118,6 +118,34 @@ public interface OnLoadAudioListener {
 	- progress : The progress of loading audio.
 
 ***
+
+`Expose functions` for users:
+- getPianoWidth()
+	- `return` : **int**
+	- `description` : **return the total width of the piano view.**
+- getLayoutWidth()
+	- `return` : int
+	- `description` : **return the piano view layout width,in a way it's the piano width what we can see.**
+- setPianoColors(String[] pianoColors)
+	- `return` : **void**
+	- `param` :
+		- pianoColors : **the color array for the rectangle on the white piano key to show the piano voice.** `Note : it's length must be 9.`
+	- `description` : **set the color of the rectangle on the white piano key which to show the piano voice.**
+- scroll(int progress)
+	- `return` : **void**
+	- `param` :
+		- progress : **the progress that the piano view be scroll distance of the total piano view width.** `suggest : use seekBar or progressBar to get progress.`
+	- `description` : **set the scrolled progress of the piano view.**
+- setOnPianoClickListener(OnPianoClickListener listener)
+	- `return` : **void**
+	- `param` :
+		- listener : **the OnPianoClickListener interface**
+	- `description` : **set the OnPianoClickListener to listen when user click the piano keys.**
+- setOnLoadMusicListener(OnLoadAudioListener musicListener)
+	- `return` : **void**
+	- `param` :
+		- musicListener : **the OnLoadAudioListener interface**
+	- `description` : **set the OnLoadAudioListener to listen when the view load audio.**	
 
 For more reference,plaese see the [sample](./sample).
 
