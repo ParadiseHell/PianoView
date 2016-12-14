@@ -62,6 +62,8 @@ public class PianoView extends View {
     private final static int INIT_SCROLL = 1;
     private final static int NOT_INIT_SCROLL = 0;
     private int initScroll = NOT_INIT_SCROLL;
+    //设置是否可以点击
+    private boolean canPress = true;
 
     //构造函数
     public PianoView(Context context) {
@@ -186,35 +188,39 @@ public class PianoView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        switch (MotionEventCompat.getActionMasked(event)){
-            //当第一个手指点击按键的时候
-            case MotionEvent.ACTION_DOWN:
-                handleDown(MotionEventCompat.getActionIndex(event),event);
-                break;
-            //当手指在键盘上滑动的时候
-            case MotionEvent.ACTION_MOVE:
-                for (int i = 0; i < event.getPointerCount(); i++){
-                    handleMove(i,event);
-                }
-                for (int i = 0; i < event.getPointerCount(); i++){
-                    handleDown(i,event);
-                }
-                break;
-            //多点触控，当其他手指点击键盘的手
-            case MotionEvent.ACTION_POINTER_DOWN:
-                handleDown(MotionEventCompat.getActionIndex(event),event);
-                break;
-            //多点触控，当其他手指抬起的时候
-            case MotionEvent.ACTION_POINTER_UP:
-                handlePointerUp(event.getPointerId(MotionEventCompat.getActionIndex(event)));
-                break;
-            //但最后一个手指抬起的时候
-            case MotionEvent.ACTION_UP:
-                Log.e(TAG,"ACTION_UP:"+MotionEventCompat.getActionIndex(event));
-                handleUp();
-                break;
+        if (canPress) {
+            switch (MotionEventCompat.getActionMasked(event)) {
+                //当第一个手指点击按键的时候
+                case MotionEvent.ACTION_DOWN:
+                    handleDown(MotionEventCompat.getActionIndex(event), event);
+                    break;
+                //当手指在键盘上滑动的时候
+                case MotionEvent.ACTION_MOVE:
+                    for (int i = 0; i < event.getPointerCount(); i++) {
+                        handleMove(i, event);
+                    }
+                    for (int i = 0; i < event.getPointerCount(); i++) {
+                        handleDown(i, event);
+                    }
+                    break;
+                //多点触控，当其他手指点击键盘的手
+                case MotionEvent.ACTION_POINTER_DOWN:
+                    handleDown(MotionEventCompat.getActionIndex(event), event);
+                    break;
+                //多点触控，当其他手指抬起的时候
+                case MotionEvent.ACTION_POINTER_UP:
+                    handlePointerUp(event.getPointerId(MotionEventCompat.getActionIndex(event)));
+                    break;
+                //但最后一个手指抬起的时候
+                case MotionEvent.ACTION_UP:
+                    Log.e(TAG, "ACTION_UP:" + MotionEventCompat.getActionIndex(event));
+                    handleUp();
+                    break;
+            }
+            return true;
+        }else {
+            return false;
         }
-        return true;
     }
 
     /**
@@ -418,5 +424,9 @@ public class PianoView extends View {
         PianoViewSaveState(Parcelable superState) {
             super(superState);
         }
+    }
+
+    public void setCanPress(boolean canPress) {
+        this.canPress = canPress;
     }
 }

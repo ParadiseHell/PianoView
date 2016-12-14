@@ -24,6 +24,7 @@ public class MainActivity extends Activity implements OnPianoClickListener,OnLoa
         pianoView.setOnPianoClickListener(this);
         pianoView.setOnLoadMusicListener(this);
         seekBar.setOnSeekBarChangeListener(this);
+        seekBar.setPadding(0,0,0,0);
         Log.e("TAG","onCreate");
     }
 
