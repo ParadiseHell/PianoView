@@ -22,6 +22,7 @@ import com.chengtao.pianoview.entity.Piano;
 import com.chengtao.pianoview.entity.PianoKey;
 import com.chengtao.pianoview.impl.OnLoadAudioListener;
 import com.chengtao.pianoview.impl.OnPianoClickListener;
+import com.chengtao.pianoview.impl.OnPianoDrawFinishListener;
 import com.chengtao.pianoview.utils.AudioUtils;
 
 import java.util.ArrayList;
@@ -57,6 +58,8 @@ public class PianoView extends View {
     private float scale = 0;
     //音频加载接口
     private OnLoadAudioListener musicListener;
+    //钢琴画完接口
+    private OnPianoDrawFinishListener drawFinishListener;
     //钢琴被滑动的一些属性
     private int progress = 0;
     private final static int INIT_SCROLL = 1;
@@ -141,6 +144,10 @@ public class PianoView extends View {
             scroll(progress);
             Log.e(TAG,"progress:"+progress);
             initScroll = NOT_INIT_SCROLL;
+        }
+        if (drawFinishListener != null){
+            drawFinishListener.pianoDrawFinish();
+            drawFinishListener = null;
         }
     }
 
@@ -428,5 +435,9 @@ public class PianoView extends View {
 
     public void setCanPress(boolean canPress) {
         this.canPress = canPress;
+    }
+
+    public void setDrawFinishListener(OnPianoDrawFinishListener drawFinishListener) {
+        this.drawFinishListener = drawFinishListener;
     }
 }
