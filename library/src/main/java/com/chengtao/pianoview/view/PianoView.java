@@ -55,7 +55,7 @@ public class PianoView extends View {
     //布局的宽度
     private int layoutWidth = 0;
     //缩放比例
-    private float scale = 0;
+    private float scale = 1;
     //音频加载接口
     private OnLoadAudioListener musicListener;
     //钢琴画完接口
@@ -156,38 +156,27 @@ public class PianoView extends View {
         Log.e(TAG,"onMeasure");
         Drawable whiteKeyDrawable = ContextCompat.getDrawable(context, R.drawable.white_piano_key);
         //最小高度
-        int whiteKeyHeight = whiteKeyDrawable.getMinimumHeight() / 2;
-        //最小宽度
-        int whiteKeyWidth = (whiteKeyDrawable.getMinimumHeight() / 2) * 7;
+        int whiteKeyHeight = whiteKeyDrawable.getIntrinsicHeight();
         //获取布局中的高度和宽度及其模式
-        int widthMode = MeasureSpec.getMode(widthMeasureSpec);
         int width = MeasureSpec.getSize(widthMeasureSpec);
         int heightMode = MeasureSpec.getMode(heightMeasureSpec);
         int height = MeasureSpec.getSize(heightMeasureSpec);
-        //设置宽度
-        switch (widthMode){
-            case MeasureSpec.EXACTLY:
-                break;
-            case MeasureSpec.AT_MOST:
-                width = Math.min(width,whiteKeyWidth);
-                break;
-            case MeasureSpec.UNSPECIFIED:
-                width = whiteKeyWidth;
-                break;
-        }
         //设置高度
         switch (heightMode){
             case MeasureSpec.EXACTLY:
+                Log.e(TAG,"EXACTLY");
                 break;
             case MeasureSpec.AT_MOST:
+                Log.e(TAG,"AT_MOST");
                 height = Math.min(height,whiteKeyHeight);
                 break;
             case MeasureSpec.UNSPECIFIED:
+                Log.e(TAG,"UNSPECIFIED");
                 height = whiteKeyHeight;
                 break;
         }
         //设置缩放比例
-        scale = (float) (height - getPaddingTop() - getPaddingBottom()) / (float) dpToPx(whiteKeyHeight);
+        scale = (float) (height - getPaddingTop() - getPaddingBottom()) / (float) (whiteKeyHeight);
         layoutWidth = width - getPaddingLeft() - getPaddingRight();
         //设置布局高度和宽度
         setMeasuredDimension(width,height);
