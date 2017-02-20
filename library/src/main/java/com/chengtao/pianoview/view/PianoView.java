@@ -7,6 +7,9 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.v4.content.ContextCompat;
@@ -18,11 +21,12 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import com.chengtao.pianoview.R;
+import com.chengtao.pianoview.entity.AutoPlayEntity;
 import com.chengtao.pianoview.entity.Piano;
 import com.chengtao.pianoview.entity.PianoKey;
 import com.chengtao.pianoview.impl.OnLoadAudioListener;
+import com.chengtao.pianoview.impl.OnPianoAutoPlayListener;
 import com.chengtao.pianoview.impl.OnPianoClickListener;
-import com.chengtao.pianoview.impl.OnPianoDrawFinishListener;
 import com.chengtao.pianoview.utils.AudioUtils;
 
 import java.util.ArrayList;
@@ -58,8 +62,8 @@ public class PianoView extends View {
     private float scale = 1;
     //音频加载接口
     private OnLoadAudioListener musicListener;
-    //钢琴画完接口
-    private OnPianoDrawFinishListener drawFinishListener;
+    //自动播放接口
+    private OnPianoAutoPlayListener autoPlayListener;
     //钢琴被滑动的一些属性
     private int progress = 0;
     private final static int INIT_SCROLL = 1;
@@ -67,6 +71,19 @@ public class PianoView extends View {
     private int initScroll = NOT_INIT_SCROLL;
     //设置是否可以点击
     private boolean canPress = true;
+    //自动播放Handler
+    private Handler autoPlayHandler = new Handler(Looper.myLooper()) {
+        @Override
+        public void handleMessage(Message msg) {
+            handleAutoPlay(msg);
+        }
+    };
+    //消息ID
+    private static final int HANDLE_AUTO_PLAY_START = 0;
+    private static final int HANDLE_AUTO_PLAY_END = 1;
+    private static final int HANDLE_AUTO_PLAY_BLACK_DOWN = 2;
+    private static final int HANDLE_AUTO_PLAY_WHITE_DOWN = 3;
+    private static final int HANDLE_AUTO_PLAY_KEY_UP = 4;
 
     //构造函数
     public PianoView(Context context) {
@@ -144,10 +161,6 @@ public class PianoView extends View {
             scroll(progress);
             Log.e(TAG,"progress:"+progress);
             initScroll = NOT_INIT_SCROLL;
-        }
-        if (drawFinishListener != null){
-            drawFinishListener.pianoDrawFinish();
-            drawFinishListener = null;
         }
     }
 
@@ -283,15 +296,7 @@ public class PianoView extends View {
         for (int i = 0; i < whitePianoKeys.size(); i++){
             for (PianoKey key : whitePianoKeys.get(i)){
                 if (!key.isPressed() && key.contains(x,y)){
-                    key.getKeyDrawable().setState(new int[]{android.R.attr.state_pressed});
-                    invalidate(key.getKeyDrawable().getBounds());
-                    utils.playMusic(Piano.PianoKeyType.WHITE,key.getGroup(),key.getPositionOfGroup());
-                    key.setPressed(true);
-                    key.setFingerID(event.getPointerId(which));
-                    if (listener != null){
-                        listener.onPianoClick(key.getType(),key.getVoice(),key.getGroup(),key.getPositionOfGroup());
-                    }
-                    pressedKeys.add(key);
+                    handleWhiteKeyDown(which, event, key);
                 }
             }
         }
@@ -299,17 +304,165 @@ public class PianoView extends View {
         for (int i = 0; i < blackPianoKeys.size(); i++){
             for (PianoKey key : blackPianoKeys.get(i)){
                 if (!key.isPressed() && key.contains(x,y)){
-                    key.getKeyDrawable().setState(new int[]{android.R.attr.state_pressed});
-                    invalidate(key.getKeyDrawable().getBounds());
-                    utils.playMusic(Piano.PianoKeyType.BLACK,key.getGroup(),key.getPositionOfGroup());
-                    key.setPressed(true);
-                    key.setFingerID(event.getPointerId(which));
-                    if (listener != null){
-                        listener.onPianoClick(key.getType(),key.getVoice(),key.getGroup(),key.getPositionOfGroup());
-                    }
-                    pressedKeys.add(key);
+                    handleBlackKeyDown(which, event, key);
                 }
             }
+        }
+    }
+
+    /**
+     * 处理黑键点击
+     * @param which 那个触摸点
+     * @param event 事件
+     * @param key 钢琴按键
+     */
+    private void handleBlackKeyDown(int which, MotionEvent event, PianoKey key) {
+        key.getKeyDrawable().setState(new int[]{android.R.attr.state_pressed});
+        key.setPressed(true);
+        if (event != null){
+            key.setFingerID(event.getPointerId(which));
+        }
+        pressedKeys.add(key);
+        invalidate(key.getKeyDrawable().getBounds());
+        utils.playMusic(Piano.PianoKeyType.BLACK,key.getGroup(),key.getPositionOfGroup());
+        if (listener != null){
+            listener.onPianoClick(key.getType(),key.getVoice(),key.getGroup(),key.getPositionOfGroup());
+        }
+    }
+
+    /**
+     * 处理白键点击
+     * @param which 那个触摸点
+     * @param event 事件
+     * @param key 钢琴按键
+     */
+    private void handleWhiteKeyDown(int which, MotionEvent event, PianoKey key) {
+        key.getKeyDrawable().setState(new int[]{android.R.attr.state_pressed});
+        key.setPressed(true);
+        if (event != null){
+            key.setFingerID(event.getPointerId(which));
+        }
+        pressedKeys.add(key);
+        invalidate(key.getKeyDrawable().getBounds());
+        utils.playMusic(Piano.PianoKeyType.WHITE,key.getGroup(),key.getPositionOfGroup());
+        if (listener != null){
+            listener.onPianoClick(key.getType(),key.getVoice(),key.getGroup(),key.getPositionOfGroup());
+        }
+    }
+
+    /**
+     * 自动播放
+     * @param autoPlayEntities 自动播放实体列表
+     */
+    public void autoPlay(final ArrayList<AutoPlayEntity> autoPlayEntities) {
+        new Thread() {
+            @Override
+            public void run() {
+                //开始
+                if (autoPlayHandler != null) {
+                    autoPlayHandler.sendEmptyMessage(HANDLE_AUTO_PLAY_START);
+                }
+                //播放
+                try {
+                    for (AutoPlayEntity entity : autoPlayEntities) {
+                        switch (entity.getType()) {
+                            case BLACK://黑键
+                                PianoKey blackKey = null;
+                                if (entity.getGroup() == 0) {
+                                    if (entity.getPosition() == 0) {
+                                        blackKey = blackPianoKeys.get(0)[0];
+                                    }
+                                } else if (entity.getGroup() > 0 && entity.getGroup() <= 7) {
+                                    if (entity.getPosition() >= 0 && entity.getPosition() <= 4) {
+                                        blackKey = blackPianoKeys.get(entity.getGroup())[entity.getPosition()];
+                                    }
+                                }
+                                if (blackKey != null) {
+                                    Message msg = Message.obtain();
+                                    msg.what = HANDLE_AUTO_PLAY_BLACK_DOWN;
+                                    msg.obj = blackKey;
+                                    autoPlayHandler.sendMessage(msg);
+                                }
+                                break;
+                            case WHITE://白键
+                                PianoKey whiteKey = null;
+                                if (entity.getGroup() == 0) {
+                                    if (entity.getPosition() == 0) {
+                                        whiteKey = whitePianoKeys.get(0)[0];
+                                    } else if (entity.getPosition() == 1) {
+                                        whiteKey = whitePianoKeys.get(0)[1];
+                                    }
+                                } else if (entity.getGroup() >= 0 && entity.getGroup() <= 7) {
+                                    if (entity.getPosition() >= 0 && entity.getPosition() <= 6) {
+                                        whiteKey = whitePianoKeys.get(entity.getGroup())[entity.getPosition()];
+                                    }
+                                } else if (entity.getGroup() == 8) {
+                                    if (entity.getPosition() == 0) {
+                                        whiteKey = whitePianoKeys.get(8)[0];
+                                    }
+                                }
+                                if (whiteKey != null) {
+                                    Message msg = Message.obtain();
+                                    msg.what = HANDLE_AUTO_PLAY_WHITE_DOWN;
+                                    msg.obj = whiteKey;
+                                    autoPlayHandler.sendMessage(msg);
+                                }
+                                break;
+                        }
+                        Thread.sleep(entity.getCurrentBreakTime() / 2);
+                        autoPlayHandler.sendEmptyMessage(HANDLE_AUTO_PLAY_KEY_UP);
+                        Thread.sleep(entity.getCurrentBreakTime() / 2);
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                //结束
+                if (autoPlayHandler != null) {
+                    autoPlayHandler.sendEmptyMessage(HANDLE_AUTO_PLAY_END);
+                }
+            }
+        }.start();
+    }
+    /**
+     * 处理自动播放
+     *
+     * @param msg 消息实体
+     */
+    private void handleAutoPlay(Message msg) {
+        switch (msg.what) {
+            case HANDLE_AUTO_PLAY_BLACK_DOWN://播放黑键
+                if (msg.obj != null) {
+                    try {
+                        PianoKey key = (PianoKey) msg.obj;
+                        handleBlackKeyDown(-1,null,key);
+                    } catch (Exception e) {
+                        Log.e("TAG", "黑键对象有问题:" + e.getMessage());
+                    }
+                }
+                break;
+            case HANDLE_AUTO_PLAY_WHITE_DOWN://播放白键
+                if (msg.obj != null) {
+                    try {
+                        PianoKey key = (PianoKey) msg.obj;
+                        handleWhiteKeyDown(-1,null,key);
+                    } catch (Exception e) {
+                        Log.e("TAG", "白键对象有问题:" + e.getMessage());
+                    }
+                }
+                break;
+            case HANDLE_AUTO_PLAY_KEY_UP:
+                handleUp();
+                break;
+            case HANDLE_AUTO_PLAY_START://开始
+                if (autoPlayListener != null) {
+                    autoPlayListener.onPianoAutoPlayStart();
+                }
+                break;
+            case HANDLE_AUTO_PLAY_END://结束
+                if (autoPlayListener != null) {
+                    autoPlayListener.onPianoAutoPlayEnd();
+                }
+                break;
         }
     }
 
@@ -426,7 +579,8 @@ public class PianoView extends View {
         this.canPress = canPress;
     }
 
-    public void setDrawFinishListener(OnPianoDrawFinishListener drawFinishListener) {
-        this.drawFinishListener = drawFinishListener;
+
+    public void setAutoPlayListener(OnPianoAutoPlayListener autoPlayListener) {
+        this.autoPlayListener = autoPlayListener;
     }
 }
