@@ -26,7 +26,7 @@ Add the dependency:
 
 ```gradle
 dependencies {
-        compile 'com.github.ParadiseHell:PianoView:v1.1.5'
+        compile 'com.github.ParadiseHell:PianoView:v1.1.6'
 }
 ```
 
