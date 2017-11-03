@@ -3,6 +3,7 @@ package com.chengtao.pianoview.utils;
 import android.text.TextUtils;
 import android.util.Log;
 import com.chengtao.pianoview.entity.AutoPlayEntity;
+import com.chengtao.pianoview.entity.Piano;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -22,7 +23,8 @@ import java.util.List;
 public class AutoPlayUtils {
   public static final Gson gson = new GsonBuilder().create();
 
-  public static ArrayList<AutoPlayEntity> getAutoPlayEntityList(String configJsonString) {
+  public static ArrayList<AutoPlayEntity> getAutoPlayEntityListByJsonString(
+      String configJsonString) {
     if (!TextUtils.isEmpty(configJsonString)) {
       try {
         return gson.fromJson(configJsonString, new TypeToken<List<AutoPlayEntity>>() {
@@ -34,7 +36,8 @@ public class AutoPlayUtils {
     return null;
   }
 
-  public static ArrayList<AutoPlayEntity> getAutoPlayEntityList(InputStream configJsonStream) {
+  public static ArrayList<AutoPlayEntity> getAutoPlayEntityListJsonStream(
+      InputStream configJsonStream) {
     if (configJsonStream != null) {
       try {
         BufferedReader reader = new BufferedReader(new InputStreamReader(configJsonStream));
@@ -46,6 +49,51 @@ public class AutoPlayUtils {
       } catch (Exception e) {
         Log.e("TAG", "AutoPlayUtils-->" + e.getMessage());
       }
+    }
+    return null;
+  }
+
+  public static ArrayList<AutoPlayEntity> getAutoPlayEntityListByCustomConfigString(
+      String customConfigString) {
+    try {
+      return convertToAutoPlayEntityList(
+          PianoConvertUtils.convertByConfigString(customConfigString));
+    } catch (Throwable throwable) {
+      Log.e("TAG", throwable.getMessage());
+    }
+    return null;
+  }
+
+  public static ArrayList<AutoPlayEntity> getAutoPlayEntityListByCustomConfigInputStream(
+      InputStream customConfigInputStream) {
+    try {
+      return convertToAutoPlayEntityList(
+          PianoConvertUtils.convertByInputStream(customConfigInputStream));
+    } catch (Throwable throwable) {
+      Log.e("TAG", throwable.getMessage());
+    }
+    return null;
+  }
+
+  private static ArrayList<AutoPlayEntity> convertToAutoPlayEntityList(
+      List<PianoConvertUtils.PianoKey> keyList) {
+    if (keyList != null && keyList.size() > 0) {
+      ArrayList<AutoPlayEntity> list = new ArrayList<>();
+      for (PianoConvertUtils.PianoKey key : keyList) {
+        if (key != null) {
+          AutoPlayEntity entity = new AutoPlayEntity();
+          if (key.getType() == PianoConvertUtils.PianoKey.BLACK_KEY) {
+            entity.setType(Piano.PianoKeyType.BLACK);
+          } else if (key.getType() == PianoConvertUtils.PianoKey.WHITE_KEY) {
+            entity.setType(Piano.PianoKeyType.WHITE);
+          }
+          entity.setCurrentBreakTime(key.getFrequency());
+          entity.setGroup(key.getGroup());
+          entity.setPosition(key.getPosition());
+          list.add(entity);
+        }
+      }
+      return list;
     }
     return null;
   }

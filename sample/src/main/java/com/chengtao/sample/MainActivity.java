@@ -65,7 +65,8 @@ import java.util.ArrayList;
     if (USE_CONFIG_FILE) {
       AssetManager assetManager = getAssets();
       try {
-        litterStarList = AutoPlayUtils.getAutoPlayEntityList(assetManager.open("little_star.json"));
+        litterStarList = AutoPlayUtils.getAutoPlayEntityListByCustomConfigInputStream(
+            assetManager.open("flight_of_the_bumble_bee"));
       } catch (IOException e) {
         Log.e("TAG", e.getMessage());
       }

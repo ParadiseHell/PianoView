@@ -71,6 +71,8 @@ public class PianoView extends View {
   private boolean isAutoPlaying = false;
   //初始化结束
   private boolean isInitFinish = false;
+  private int minRange = 0;
+  private int maxRange = 0;
   //自动播放Handler
   private Handler autoPlayHandler = new Handler(Looper.myLooper()) {
     @Override public void handleMessage(Message msg) {
@@ -135,10 +137,10 @@ public class PianoView extends View {
   }
 
   @Override protected void onDraw(Canvas canvas) {
-    Log.e(TAG, "onDraw");
     //初始化钢琴
     if (piano == null) {
-      Log.e(TAG, "初始化钢琴");
+      minRange = 0;
+      maxRange = layoutWidth;
       piano = new Piano(context, scale);
       //获取白键
       whitePianoKeys = piano.getWhitePianoKeys();
@@ -146,7 +148,6 @@ public class PianoView extends View {
       blackPianoKeys = piano.getBlackPianoKeys();
       //初始化播放器
       if (utils == null) {
-        Log.e(TAG, "初始化播放器");
         utils = AudioUtils.getInstance(getContext(), loadAudioListener);
         try {
           utils.loadMusic(piano);
@@ -158,7 +159,6 @@ public class PianoView extends View {
     //初始化白键
     if (whitePianoKeys != null) {
       for (int i = 0; i < whitePianoKeys.size(); i++) {
-        Log.e(TAG, "初始化白键");
         for (PianoKey key : whitePianoKeys.get(i)) {
           paint.setColor(Color.parseColor(pianoColors[i]));
           key.getKeyDrawable().draw(canvas);
@@ -184,7 +184,6 @@ public class PianoView extends View {
     //初始化黑键
     if (blackPianoKeys != null) {
       for (int i = 0; i < blackPianoKeys.size(); i++) {
-        Log.e(TAG, "初始化黑键");
         for (PianoKey key : blackPianoKeys.get(i)) {
           key.getKeyDrawable().draw(canvas);
         }
@@ -384,53 +383,57 @@ public class PianoView extends View {
         try {
           if (autoPlayEntities != null) {
             for (AutoPlayEntity entity : autoPlayEntities) {
-              switch (entity.getType()) {
-                case BLACK://黑键
-                  PianoKey blackKey = null;
-                  if (entity.getGroup() == 0) {
-                    if (entity.getPosition() == 0) {
-                      blackKey = blackPianoKeys.get(0)[0];
-                    }
-                  } else if (entity.getGroup() > 0 && entity.getGroup() <= 7) {
-                    if (entity.getPosition() >= 0 && entity.getPosition() <= 4) {
-                      blackKey = blackPianoKeys.get(entity.getGroup())[entity.getPosition()];
-                    }
+              if (entity != null) {
+                if (entity.getType() != null) {
+                  switch (entity.getType()) {
+                    case BLACK://黑键
+                      PianoKey blackKey = null;
+                      if (entity.getGroup() == 0) {
+                        if (entity.getPosition() == 0) {
+                          blackKey = blackPianoKeys.get(0)[0];
+                        }
+                      } else if (entity.getGroup() > 0 && entity.getGroup() <= 7) {
+                        if (entity.getPosition() >= 0 && entity.getPosition() <= 4) {
+                          blackKey = blackPianoKeys.get(entity.getGroup())[entity.getPosition()];
+                        }
+                      }
+                      if (blackKey != null) {
+                        Message msg = Message.obtain();
+                        msg.what = HANDLE_AUTO_PLAY_BLACK_DOWN;
+                        msg.obj = blackKey;
+                        autoPlayHandler.sendMessage(msg);
+                      }
+                      break;
+                    case WHITE://白键
+                      PianoKey whiteKey = null;
+                      if (entity.getGroup() == 0) {
+                        if (entity.getPosition() == 0) {
+                          whiteKey = whitePianoKeys.get(0)[0];
+                        } else if (entity.getPosition() == 1) {
+                          whiteKey = whitePianoKeys.get(0)[1];
+                        }
+                      } else if (entity.getGroup() >= 0 && entity.getGroup() <= 7) {
+                        if (entity.getPosition() >= 0 && entity.getPosition() <= 6) {
+                          whiteKey = whitePianoKeys.get(entity.getGroup())[entity.getPosition()];
+                        }
+                      } else if (entity.getGroup() == 8) {
+                        if (entity.getPosition() == 0) {
+                          whiteKey = whitePianoKeys.get(8)[0];
+                        }
+                      }
+                      if (whiteKey != null) {
+                        Message msg = Message.obtain();
+                        msg.what = HANDLE_AUTO_PLAY_WHITE_DOWN;
+                        msg.obj = whiteKey;
+                        autoPlayHandler.sendMessage(msg);
+                      }
+                      break;
                   }
-                  if (blackKey != null) {
-                    Message msg = Message.obtain();
-                    msg.what = HANDLE_AUTO_PLAY_BLACK_DOWN;
-                    msg.obj = blackKey;
-                    autoPlayHandler.sendMessage(msg);
-                  }
-                  break;
-                case WHITE://白键
-                  PianoKey whiteKey = null;
-                  if (entity.getGroup() == 0) {
-                    if (entity.getPosition() == 0) {
-                      whiteKey = whitePianoKeys.get(0)[0];
-                    } else if (entity.getPosition() == 1) {
-                      whiteKey = whitePianoKeys.get(0)[1];
-                    }
-                  } else if (entity.getGroup() >= 0 && entity.getGroup() <= 7) {
-                    if (entity.getPosition() >= 0 && entity.getPosition() <= 6) {
-                      whiteKey = whitePianoKeys.get(entity.getGroup())[entity.getPosition()];
-                    }
-                  } else if (entity.getGroup() == 8) {
-                    if (entity.getPosition() == 0) {
-                      whiteKey = whitePianoKeys.get(8)[0];
-                    }
-                  }
-                  if (whiteKey != null) {
-                    Message msg = Message.obtain();
-                    msg.what = HANDLE_AUTO_PLAY_WHITE_DOWN;
-                    msg.obj = whiteKey;
-                    autoPlayHandler.sendMessage(msg);
-                  }
-                  break;
+                }
+                Thread.sleep(entity.getCurrentBreakTime() / 2);
+                autoPlayHandler.sendEmptyMessage(HANDLE_AUTO_PLAY_KEY_UP);
+                Thread.sleep(entity.getCurrentBreakTime() / 2);
               }
-              Thread.sleep(entity.getCurrentBreakTime() / 2);
-              autoPlayHandler.sendEmptyMessage(HANDLE_AUTO_PLAY_KEY_UP);
-              Thread.sleep(entity.getCurrentBreakTime() / 2);
             }
           }
         } catch (InterruptedException e) {
@@ -487,18 +490,21 @@ public class PianoView extends View {
    * @param progress 移动百分比
    */
   public void scroll(int progress) {
+    int x;
     switch (progress) {
       case 0:
-        this.scrollTo(0, 0);
+        x = 0;
         break;
       case 100:
-        this.scrollTo(getPianoWidth() - getLayoutWidth(), 0);
+        x = getPianoWidth() - getLayoutWidth();
         break;
       default:
-        this.scrollTo(
-            (int) (((float) progress / 100f) * (float) (getPianoWidth() - getLayoutWidth())), 0);
+        x = (int) (((float) progress / 100f) * (float) (getPianoWidth() - getLayoutWidth()));
         break;
     }
+    minRange = x;
+    maxRange = x + getLayoutWidth();
+    this.scrollTo(x, 0);
     this.progress = progress;
   }
 

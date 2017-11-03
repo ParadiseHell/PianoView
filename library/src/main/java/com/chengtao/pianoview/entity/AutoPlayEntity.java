@@ -27,6 +27,9 @@ public class AutoPlayEntity {
    */
   @SerializedName("break") private long currentBreakTime;
 
+  public AutoPlayEntity() {
+  }
+
   public AutoPlayEntity(Piano.PianoKeyType type, int group, int position, long currentBreakTime) {
     this.type = type;
     this.group = group;
