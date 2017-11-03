@@ -2,6 +2,7 @@ package com.chengtao.sample;
 
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
+import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -17,12 +18,15 @@ import com.chengtao.pianoview.entity.Piano;
 import com.chengtao.pianoview.listener.OnLoadAudioListener;
 import com.chengtao.pianoview.listener.OnPianoAutoPlayListener;
 import com.chengtao.pianoview.listener.OnPianoListener;
+import com.chengtao.pianoview.utils.AutoPlayUtils;
 import com.chengtao.pianoview.view.PianoView;
+import java.io.IOException;
 import java.util.ArrayList;
 
 @SuppressWarnings("FieldCanBeLocal") public class MainActivity extends Activity
     implements OnPianoListener, OnLoadAudioListener, SeekBar.OnSeekBarChangeListener,
     View.OnClickListener, OnPianoAutoPlayListener {
+  private static final boolean USE_CONFIG_FILE = true;
   private PianoView pianoView;
   private SeekBar seekBar;
   private Button leftArrow;
@@ -58,7 +62,16 @@ import java.util.ArrayList;
     leftArrow.setOnClickListener(this);
     btnMusic.setOnClickListener(this);
     //init
-    initLitterStarList();
+    if (USE_CONFIG_FILE) {
+      AssetManager assetManager = getAssets();
+      try {
+        litterStarList = AutoPlayUtils.getAutoPlayEntityList(assetManager.open("little_star.json"));
+      } catch (IOException e) {
+        Log.e("TAG", e.getMessage());
+      }
+    } else {
+      initLitterStarList();
+    }
   }
 
   /**

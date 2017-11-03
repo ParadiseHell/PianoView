@@ -11,6 +11,7 @@ import android.graphics.drawable.ScaleDrawable;
 import android.support.v4.content.ContextCompat;
 import android.view.Gravity;
 import com.chengtao.pianoview.R;
+import com.google.gson.annotations.SerializedName;
 import java.util.ArrayList;
 
 /**
@@ -237,7 +238,22 @@ public class Piano {
   }
 
   public enum PianoKeyType {
-    BLACK, WHITE
+    @SerializedName("0")
+    BLACK(0), @SerializedName("1")
+    WHITE(1);
+    private int value;
+
+    PianoKeyType(int value) {
+      this.value = value;
+    }
+
+    public int getValue() {
+      return value;
+    }
+
+    @Override public String toString() {
+      return "PianoKeyType{" + "value=" + value + '}';
+    }
   }
 
   private enum BlackKeyPosition {

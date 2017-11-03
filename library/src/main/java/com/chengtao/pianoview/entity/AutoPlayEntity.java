@@ -4,6 +4,8 @@ package com.chengtao.pianoview.entity;
  * Created by ChengTao on 2017-02-20.
  */
 
+import com.google.gson.annotations.SerializedName;
+
 /**
  * 自动播放实体
  */
@@ -23,7 +25,7 @@ public class AutoPlayEntity {
   /**
    * 当前按键与之后按键的间隔时间
    */
-  private long currentBreakTime;
+  @SerializedName("break") private long currentBreakTime;
 
   public AutoPlayEntity(Piano.PianoKeyType type, int group, int position, long currentBreakTime) {
     this.type = type;
@@ -62,5 +64,18 @@ public class AutoPlayEntity {
 
   public void setCurrentBreakTime(long currentBreakTime) {
     this.currentBreakTime = currentBreakTime;
+  }
+
+  @Override public String toString() {
+    return "AutoPlayEntity{"
+        + "type="
+        + type
+        + ", group="
+        + group
+        + ", position="
+        + position
+        + ", currentBreakTime="
+        + currentBreakTime
+        + '}';
   }
 }

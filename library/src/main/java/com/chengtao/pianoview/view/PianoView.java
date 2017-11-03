@@ -380,54 +380,56 @@ public class PianoView extends View {
         }
         //播放
         try {
-          for (AutoPlayEntity entity : autoPlayEntities) {
-            switch (entity.getType()) {
-              case BLACK://黑键
-                PianoKey blackKey = null;
-                if (entity.getGroup() == 0) {
-                  if (entity.getPosition() == 0) {
-                    blackKey = blackPianoKeys.get(0)[0];
+          if (autoPlayEntities != null) {
+            for (AutoPlayEntity entity : autoPlayEntities) {
+              switch (entity.getType()) {
+                case BLACK://黑键
+                  PianoKey blackKey = null;
+                  if (entity.getGroup() == 0) {
+                    if (entity.getPosition() == 0) {
+                      blackKey = blackPianoKeys.get(0)[0];
+                    }
+                  } else if (entity.getGroup() > 0 && entity.getGroup() <= 7) {
+                    if (entity.getPosition() >= 0 && entity.getPosition() <= 4) {
+                      blackKey = blackPianoKeys.get(entity.getGroup())[entity.getPosition()];
+                    }
                   }
-                } else if (entity.getGroup() > 0 && entity.getGroup() <= 7) {
-                  if (entity.getPosition() >= 0 && entity.getPosition() <= 4) {
-                    blackKey = blackPianoKeys.get(entity.getGroup())[entity.getPosition()];
+                  if (blackKey != null) {
+                    Message msg = Message.obtain();
+                    msg.what = HANDLE_AUTO_PLAY_BLACK_DOWN;
+                    msg.obj = blackKey;
+                    autoPlayHandler.sendMessage(msg);
                   }
-                }
-                if (blackKey != null) {
-                  Message msg = Message.obtain();
-                  msg.what = HANDLE_AUTO_PLAY_BLACK_DOWN;
-                  msg.obj = blackKey;
-                  autoPlayHandler.sendMessage(msg);
-                }
-                break;
-              case WHITE://白键
-                PianoKey whiteKey = null;
-                if (entity.getGroup() == 0) {
-                  if (entity.getPosition() == 0) {
-                    whiteKey = whitePianoKeys.get(0)[0];
-                  } else if (entity.getPosition() == 1) {
-                    whiteKey = whitePianoKeys.get(0)[1];
+                  break;
+                case WHITE://白键
+                  PianoKey whiteKey = null;
+                  if (entity.getGroup() == 0) {
+                    if (entity.getPosition() == 0) {
+                      whiteKey = whitePianoKeys.get(0)[0];
+                    } else if (entity.getPosition() == 1) {
+                      whiteKey = whitePianoKeys.get(0)[1];
+                    }
+                  } else if (entity.getGroup() >= 0 && entity.getGroup() <= 7) {
+                    if (entity.getPosition() >= 0 && entity.getPosition() <= 6) {
+                      whiteKey = whitePianoKeys.get(entity.getGroup())[entity.getPosition()];
+                    }
+                  } else if (entity.getGroup() == 8) {
+                    if (entity.getPosition() == 0) {
+                      whiteKey = whitePianoKeys.get(8)[0];
+                    }
                   }
-                } else if (entity.getGroup() >= 0 && entity.getGroup() <= 7) {
-                  if (entity.getPosition() >= 0 && entity.getPosition() <= 6) {
-                    whiteKey = whitePianoKeys.get(entity.getGroup())[entity.getPosition()];
+                  if (whiteKey != null) {
+                    Message msg = Message.obtain();
+                    msg.what = HANDLE_AUTO_PLAY_WHITE_DOWN;
+                    msg.obj = whiteKey;
+                    autoPlayHandler.sendMessage(msg);
                   }
-                } else if (entity.getGroup() == 8) {
-                  if (entity.getPosition() == 0) {
-                    whiteKey = whitePianoKeys.get(8)[0];
-                  }
-                }
-                if (whiteKey != null) {
-                  Message msg = Message.obtain();
-                  msg.what = HANDLE_AUTO_PLAY_WHITE_DOWN;
-                  msg.obj = whiteKey;
-                  autoPlayHandler.sendMessage(msg);
-                }
-                break;
+                  break;
+              }
+              Thread.sleep(entity.getCurrentBreakTime() / 2);
+              autoPlayHandler.sendEmptyMessage(HANDLE_AUTO_PLAY_KEY_UP);
+              Thread.sleep(entity.getCurrentBreakTime() / 2);
             }
-            Thread.sleep(entity.getCurrentBreakTime() / 2);
-            autoPlayHandler.sendEmptyMessage(HANDLE_AUTO_PLAY_KEY_UP);
-            Thread.sleep(entity.getCurrentBreakTime() / 2);
           }
         } catch (InterruptedException e) {
           e.printStackTrace();
