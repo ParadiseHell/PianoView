@@ -274,4 +274,11 @@ import java.util.ArrayList;
     Toast.makeText(this, "onPianoAutoPlayEnd", Toast.LENGTH_SHORT).show();
     isPlay = false;
   }
+
+  @Override protected void onDestroy() {
+    super.onDestroy();
+    if (pianoView != null) {
+      pianoView.releaseAutoPlay();
+    }
+  }
 }

@@ -448,6 +448,20 @@ public class PianoView extends View {
     }.start();
   }
 
+  /**
+   * 释放自动播放
+   */
+  public void releaseAutoPlay() {
+    if (utils != null) {
+      utils.stop();
+    }
+  }
+
+  /**
+   * 获取钢琴控件的总长度
+   *
+   * @return 钢琴控件的总长度
+   */
   public int getPianoWidth() {
     if (piano != null) {
       return piano.getPianoWith();
@@ -628,36 +642,12 @@ public class PianoView extends View {
     }
   }
 
-  @Override protected Parcelable onSaveInstanceState() {
-    Parcelable parcelable = super.onSaveInstanceState();
-    PianoViewSaveState state = new PianoViewSaveState(parcelable);
-    state.progress = this.progress;
-    return state;
-  }
-
   @Override protected void onRestoreInstanceState(Parcelable state) {
-    if (!(state instanceof PianoViewSaveState)) {
-      super.onRestoreInstanceState(state);
-      return;
-    }
-    PianoViewSaveState pianoViewSaveState = (PianoViewSaveState) state;
-    super.onRestoreInstanceState(pianoViewSaveState.getSuperState());
-    this.progress = pianoViewSaveState.progress;
+    super.onRestoreInstanceState(state);
     postDelayed(new Runnable() {
       @Override public void run() {
         scroll(progress);
       }
     }, 200);
-  }
-
-  /**
-   * 用于存储Activity重启的保存钢琴一些属性的类
-   */
-  private class PianoViewSaveState extends BaseSavedState {
-    private int progress;
-
-    PianoViewSaveState(Parcelable superState) {
-      super(superState);
-    }
   }
 }

@@ -73,7 +73,7 @@ public class AudioUtils implements LoadAudioMessage {
   }
 
   /**
-   * 记载音乐
+   * 加载音乐
    *
    * @param piano 钢琴实体
    * @throws Exception 异常
