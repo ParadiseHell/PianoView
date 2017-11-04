@@ -346,7 +346,6 @@ public class PianoConvertUtils {
           }
           key.setType(PianoKey.WHITE_KEY);
         } else {// 黑键
-          group--;
           if (position > 1) {
             position--;
           }
@@ -365,7 +364,6 @@ public class PianoConvertUtils {
           }
           key.setType(PianoKey.WHITE_KEY);
         } else {// 黑键
-          group--;
           if (position <= 2) {
             position--;
           } else {
