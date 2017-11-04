@@ -643,6 +643,11 @@ public class PianoView extends View {
     PianoViewSaveState pianoViewSaveState = (PianoViewSaveState) state;
     super.onRestoreInstanceState(pianoViewSaveState.getSuperState());
     this.progress = pianoViewSaveState.progress;
+    postDelayed(new Runnable() {
+      @Override public void run() {
+        scroll(progress);
+      }
+    }, 200);
   }
 
   /**
