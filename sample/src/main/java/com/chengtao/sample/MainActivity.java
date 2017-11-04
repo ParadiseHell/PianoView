@@ -190,9 +190,6 @@ import java.util.ArrayList;
 
   @Override public void loadPianoAudioProgress(int progress) {
     Log.e("TAG", "progress:" + progress);
-    if (progress == 100) {
-      Toast.makeText(this, "load piano audio finish", Toast.LENGTH_SHORT).show();
-    }
   }
 
   @Override public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
@@ -250,7 +247,6 @@ import java.util.ArrayList;
         seekBar.setProgress(progress);
         break;
       case R.id.iv_music:
-        seekBar.setProgress(50);
         if (!isPlay) {
           pianoView.autoPlay(litterStarList);
         }

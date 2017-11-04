@@ -372,6 +372,7 @@ public class PianoView extends View {
     if (isAutoPlaying) {
       return;
     }
+    isAutoPlaying = true;
     setCanPress(false);
     new Thread() {
       @Override public void run() {
@@ -561,6 +562,7 @@ public class PianoView extends View {
         if (msg.obj != null) {
           try {
             PianoKey key = (PianoKey) msg.obj;
+            autoScroll(key);
             handleBlackKeyDown(-1, null, key);
           } catch (Exception e) {
             Log.e("TAG", "黑键对象有问题:" + e.getMessage());
@@ -571,6 +573,7 @@ public class PianoView extends View {
         if (msg.obj != null) {
           try {
             PianoKey key = (PianoKey) msg.obj;
+            autoScroll(key);
             handleWhiteKeyDown(-1, null, key);
           } catch (Exception e) {
             Log.e("TAG", "白键对象有问题:" + e.getMessage());
@@ -592,6 +595,36 @@ public class PianoView extends View {
           autoPlayListener.onPianoAutoPlayEnd();
         }
         break;
+    }
+  }
+
+  /**
+   * 自动滚动
+   *
+   * @param key 　钢琴键
+   */
+  private void autoScroll(PianoKey key) {
+    if (isAutoPlaying) {//正在自动播放
+      if (key != null) {
+        Rect[] areas = key.getAreaOfKey();
+        if (areas != null && areas.length > 0 && areas[0] != null) {
+          int left = areas[0].left, right = key.getAreaOfKey()[0].right;
+          for (int i = 1; i < areas.length; i++) {
+            if (areas[i] != null) {
+              if (areas[i].left < left) {
+                left = areas[i].left;
+              }
+              if (areas[i].right > right) {
+                right = areas[i].right;
+              }
+            }
+          }
+          if (left < minRange || right > maxRange) {//不在当前可见区域的范围之类
+            int progress = (int) ((float) left * 100 / (float) getPianoWidth());
+            scroll(progress);
+          }
+        }
+      }
     }
   }
 

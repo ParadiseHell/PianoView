@@ -116,7 +116,7 @@ public class PianoKey {
     Rect[] areas = getAreaOfKey();
     int length = getAreaOfKey().length;
     for (int i = 0; i < length; i++) {
-      if (areas[i].contains(x, y)) {
+      if (areas[i] != null && areas[i].contains(x, y)) {
         isContain = true;
         break;
       }
