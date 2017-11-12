@@ -278,7 +278,7 @@ public class PianoView extends View {
     }
     pressedKeys.add(key);
     invalidate(key.getKeyDrawable().getBounds());
-    utils.playMusic(Piano.PianoKeyType.WHITE, key.getGroup(), key.getPositionOfGroup());
+    utils.playMusic(key);
     if (pianoListener != null) {
       pianoListener.onPianoClick(key.getType(), key.getVoice(), key.getGroup(),
           key.getPositionOfGroup());
@@ -300,7 +300,7 @@ public class PianoView extends View {
     }
     pressedKeys.add(key);
     invalidate(key.getKeyDrawable().getBounds());
-    utils.playMusic(Piano.PianoKeyType.BLACK, key.getGroup(), key.getPositionOfGroup());
+    utils.playMusic(key);
     if (pianoListener != null) {
       pianoListener.onPianoClick(key.getType(), key.getVoice(), key.getGroup(),
           key.getPositionOfGroup());

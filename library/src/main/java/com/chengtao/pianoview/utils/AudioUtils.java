@@ -1,8 +1,10 @@
 package com.chengtao.pianoview.utils;
 
 import android.content.Context;
+import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.SoundPool;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -23,7 +25,6 @@ import java.util.concurrent.Executors;
  * 音频工具类
  */
 public class AudioUtils implements LoadAudioMessage {
-  private final static String TAG = "AudioUtils";
   //线程池,用于加载和播放音频
   private ExecutorService service = Executors.newCachedThreadPool();
   //最大音频数目
@@ -35,7 +36,7 @@ public class AudioUtils implements LoadAudioMessage {
   private final static int LOAD_ERROR = 3;
   private final static int LOAD_PROGRESS = 4;
   //发送进度的间隙时间
-  private final static int SEND_PROGRESS_MESSAGE_BREAK_TIME = 500;
+  private final static int SEND_PROGRESS_MESSAGE_BREAK_TIME = 100;
   //音频池，用于播放音频
   private SoundPool pool;
   //上下文
@@ -51,20 +52,31 @@ public class AudioUtils implements LoadAudioMessage {
   private boolean isLoading = false;
   //用于处理进度消息
   private Handler handler;
+  private AudioManager audioManager;
 
   @SuppressWarnings("deprecation")
   private AudioUtils(Context context, OnLoadAudioListener loadAudioListener) {
     this.context = context;
     this.loadAudioListener = loadAudioListener;
     handler = new AudioStatusHandler(context.getMainLooper());
-    pool = new SoundPool(MAX_STREAM, AudioManager.STREAM_MUSIC, 0);
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+      pool = new SoundPool.Builder().setMaxStreams(MAX_STREAM)
+          .setAudioAttributes(
+              new AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                  .setUsage(AudioAttributes.USAGE_MEDIA)
+                  .build())
+          .build();
+    } else {
+      pool = new SoundPool(MAX_STREAM, AudioManager.STREAM_RING, 0);
+    }
+    audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
   }
 
   //单例模式，只返回一个工具实例
   public static AudioUtils getInstance(Context context, OnLoadAudioListener listener) {
-    if (instance == null) {
+    if (instance == null || instance.pool == null) {
       synchronized (AudioUtils.class) {
-        if (instance == null) {
+        if (instance == null || instance.pool == null) {
           instance = new AudioUtils(context, listener);
         }
       }
@@ -142,24 +154,26 @@ public class AudioUtils implements LoadAudioMessage {
   /**
    * 播放音乐
    *
-   * @param type 钢琴键类型
-   * @param group 组数，从0开始
-   * @param positionOfGroup 组内位置
+   * @param key 钢琴键
    */
-  public void playMusic(final Piano.PianoKeyType type, final int group, final int positionOfGroup) {
-    if (isLoadFinish) {
-      service.execute(new Runnable() {
-        @Override public void run() {
-          switch (type) {
-            case BLACK:
-              playBlackKeyMusic(group, positionOfGroup);
-              break;
-            case WHITE:
-              playWhiteKeyMusic(group, positionOfGroup);
-              break;
-          }
+  public void playMusic(final PianoKey key) {
+    if (key != null) {
+      if (isLoadFinish) {
+        if (key.getType() != null) {
+          service.execute(new Runnable() {
+            @Override public void run() {
+              switch (key.getType()) {
+                case BLACK:
+                  playBlackKeyMusic(key.getGroup(), key.getPositionOfGroup());
+                  break;
+                case WHITE:
+                  playWhiteKeyMusic(key.getGroup(), key.getPositionOfGroup());
+                  break;
+              }
+            }
+          });
         }
-      });
+      }
     }
   }
 
@@ -175,7 +189,11 @@ public class AudioUtils implements LoadAudioMessage {
       offset = 5;
     }
     int position = 7 * group - 5 + offset + positionOfGroup;
-    pool.play(whiteKeyMusics.get(position), 1f, 1f, 1, 0, 1f);
+    int volume = 1;
+    if (audioManager != null) {
+      volume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+    }
+    pool.play(whiteKeyMusics.get(position), volume, volume, 1, 0, 1f);
   }
 
   /**
@@ -190,17 +208,24 @@ public class AudioUtils implements LoadAudioMessage {
       offset = 3;
     }
     int position = 4 * group - 3 + offset + positionOfGroup;
-    pool.play(blackKeyMusics.get(position), 1f, 1f, 1, 0, 1f);
+    int volume = 1;
+    if (audioManager != null) {
+      volume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+    }
+    pool.play(blackKeyMusics.get(position), volume, volume, 1, 0, 1f);
   }
 
   /**
-   *
+   * 结束
    */
   public void stop() {
+    context = null;
     pool.release();
     pool = null;
     whiteKeyMusics.clear();
+    whiteKeyMusics = null;
     blackKeyMusics.clear();
+    blackKeyMusics = null;
   }
 
   @Override public void sendStartMessage() {
@@ -219,6 +244,9 @@ public class AudioUtils implements LoadAudioMessage {
     handler.sendMessage(Message.obtain(handler, LOAD_PROGRESS, progress));
   }
 
+  /**
+   * 自定义handler,处理加载状态
+   */
   private class AudioStatusHandler extends Handler {
     AudioStatusHandler(Looper looper) {
       super(looper);

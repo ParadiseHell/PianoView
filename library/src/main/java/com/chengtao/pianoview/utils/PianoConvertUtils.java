@@ -257,17 +257,14 @@ public class PianoConvertUtils {
     int number = Integer.valueOf(musicNote.charAt(1) + "");
     switch (status) {
       case 'H':
-        Log.e("TAG", "升调");
         highSet.add(number);
         lowSet.remove(number);
         break;
       case 'L':
-        Log.e("TAG", "降调");
         lowSet.add(number);
         highSet.remove(number);
         break;
       case 'M':
-        Log.e("TAG", "还原");
         highSet.remove(number);
         lowSet.remove(number);
         break;
@@ -378,7 +375,6 @@ public class PianoConvertUtils {
       key.setPosition(position);
     }
     key.setFrequency(frequency);
-    Log.e("TAG", key.toString());
     return key;
   }
 }

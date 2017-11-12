@@ -70,8 +70,6 @@ public class Piano {
               keys0[j].setGroup(i);
               keys0[j].setPositionOfGroup(j);
               keys0[j].setVoiceId(getVoiceFromResources("b" + i + j));
-              Log.e("TAG", "initPiano(Piano.java:" + Thread.currentThread()
-                  .getStackTrace()[2].getLineNumber() + ")" + "b" + i + j);
               keys0[j].setPressed(false);
               keys0[j].setKeyDrawable(
                   new ScaleDrawable(ContextCompat.getDrawable(context, R.drawable.black_piano_key),
@@ -92,8 +90,6 @@ public class Piano {
               keys1[j].setGroup(i);
               keys1[j].setPositionOfGroup(j);
               keys1[j].setVoiceId(getVoiceFromResources("b" + i + j));
-              Log.e("TAG", "initPiano(Piano.java:" + Thread.currentThread()
-                  .getStackTrace()[2].getLineNumber() + ")" + "b" + i + j);
               keys1[j].setPressed(false);
               keys1[j].setKeyDrawable(
                   new ScaleDrawable(ContextCompat.getDrawable(context, R.drawable.black_piano_key),
@@ -134,8 +130,6 @@ public class Piano {
               keys0[j].setGroup(i);
               keys0[j].setPositionOfGroup(j);
               keys0[j].setVoiceId(getVoiceFromResources("w" + i + j));
-              Log.e("TAG", "initPiano(Piano.java:" + Thread.currentThread()
-                  .getStackTrace()[2].getLineNumber() + ")" + "w" + i + j);
               keys0[j].setPressed(false);
               keys0[j].setKeyDrawable(
                   new ScaleDrawable(ContextCompat.getDrawable(context, R.drawable.white_piano_key),
@@ -166,8 +160,6 @@ public class Piano {
               keys1[j].setGroup(i);
               keys1[j].setPositionOfGroup(j);
               keys1[j].setVoiceId(getVoiceFromResources("w" + i + j));
-              Log.e("TAG", "initPiano(Piano.java:" + Thread.currentThread()
-                  .getStackTrace()[2].getLineNumber() + ")" + "w" + i + j);
               keys1[j].setPressed(false);
               keys1[j].setKeyDrawable(
                   new ScaleDrawable(ContextCompat.getDrawable(context, R.drawable.white_piano_key),
@@ -190,8 +182,6 @@ public class Piano {
               keys2[j].setGroup(i);
               keys2[j].setPositionOfGroup(j);
               keys2[j].setVoiceId(getVoiceFromResources("w" + i + j));
-              Log.e("TAG", "initPiano(Piano.java:" + Thread.currentThread()
-                  .getStackTrace()[2].getLineNumber() + ")" + "w" + i + j);
               keys2[j].setPressed(false);
               keys2[j].setKeyDrawable(
                   new ScaleDrawable(ContextCompat.getDrawable(context, R.drawable.white_piano_key),
