@@ -19,7 +19,7 @@ import java.util.List;
  */
 
 public class PianoConvertUtils {
-  private static final int STANDARD_DO_GROUP = 3;
+  private static final int STANDARD_DO_GROUP = 4;
   private static final int STANDARD_DO_POSITION = 0;
   private static final long STANDARD_FREQUENCY = 240;
   private static final String NUMBER_REGEX = "^\\d+$";

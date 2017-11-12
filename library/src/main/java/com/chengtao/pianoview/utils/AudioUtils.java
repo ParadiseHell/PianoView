@@ -8,6 +8,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.util.Log;
 import android.util.SparseIntArray;
 import com.chengtao.pianoview.entity.Piano;
 import com.chengtao.pianoview.entity.PianoKey;
@@ -184,15 +185,18 @@ public class AudioUtils implements LoadAudioMessage {
    * @param positionOfGroup 组内位置
    */
   private void playWhiteKeyMusic(int group, int positionOfGroup) {
-    int offset = 0;
+    int position;
     if (group == 0) {
-      offset = 5;
+      position = positionOfGroup;
+    } else {
+      position = (group - 1) * 7 + 2 + positionOfGroup;
     }
-    int position = 7 * group - 5 + offset + positionOfGroup;
     int volume = 1;
     if (audioManager != null) {
       volume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
     }
+    Log.e("TAG", "playBlackKeyMusic(AudioUtils.java:" + Thread.currentThread()
+        .getStackTrace()[2].getLineNumber() + ")" + "position:" + position);
     pool.play(whiteKeyMusics.get(position), volume, volume, 1, 0, 1f);
   }
 
@@ -203,15 +207,18 @@ public class AudioUtils implements LoadAudioMessage {
    * @param positionOfGroup 组内位置
    */
   private void playBlackKeyMusic(int group, int positionOfGroup) {
-    int offset = 0;
+    int position;
     if (group == 0) {
-      offset = 3;
+      position = positionOfGroup;
+    } else {
+      position = (group - 1) * 5 + 1 + positionOfGroup;
     }
-    int position = 4 * group - 3 + offset + positionOfGroup;
     int volume = 1;
     if (audioManager != null) {
       volume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
     }
+    Log.e("TAG", "playBlackKeyMusic(AudioUtils.java:" + Thread.currentThread()
+        .getStackTrace()[2].getLineNumber() + ")" + "position:" + position);
     pool.play(blackKeyMusics.get(position), volume, volume, 1, 0, 1f);
   }
 
