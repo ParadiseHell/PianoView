@@ -54,6 +54,8 @@ public class AudioUtils implements LoadAudioMessage {
   //用于处理进度消息
   private Handler handler;
   private AudioManager audioManager;
+  private long currentTime;
+  private int loadNum;
 
   @SuppressWarnings("deprecation")
   private AudioUtils(Context context, OnLoadAudioListener loadAudioListener) {
@@ -98,54 +100,54 @@ public class AudioUtils implements LoadAudioMessage {
     if (piano != null) {
       if (!isLoading && !isLoadFinish) {
         isLoading = true;
+        pool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
+          @Override public void onLoadComplete(SoundPool soundPool, int sampleId, int status) {
+            loadNum++;
+            if (loadNum == Piano.PIANO_NUMS) {
+              isLoadFinish = true;
+              sendProgressMessage(100);
+              sendFinishMessage();
+            } else {
+              if (System.currentTimeMillis() - currentTime >= SEND_PROGRESS_MESSAGE_BREAK_TIME) {
+                sendProgressMessage((int) (((float) loadNum / (float) Piano.PIANO_NUMS) * 100f));
+                currentTime = System.currentTimeMillis();
+              }
+            }
+          }
+        });
         service.execute(new Runnable() {
           @Override public void run() {
-            long currentTime = System.currentTimeMillis();
-            int currentNum = 0;
             sendStartMessage();
             ArrayList<PianoKey[]> whiteKeys = piano.getWhitePianoKeys();
             int whiteKeyPos = 0;
             for (int i = 0; i < whiteKeys.size(); i++) {
               for (PianoKey key : whiteKeys.get(i)) {
-                if (System.currentTimeMillis() - currentTime >= SEND_PROGRESS_MESSAGE_BREAK_TIME) {
-                  sendProgressMessage(
-                      (int) (((float) currentNum / (float) Piano.PIANO_NUMS) * 100f));
-                  currentTime = System.currentTimeMillis();
-                }
                 try {
-                  whiteKeyMusics.put(whiteKeyPos, pool.load(context, key.getVoiceId(), 1));
+                  int soundID = pool.load(context, key.getVoiceId(), 1);
+                  whiteKeyMusics.put(whiteKeyPos, soundID);
                   whiteKeyPos++;
                 } catch (Exception e) {
                   isLoading = false;
                   sendErrorMessage(e);
                   return;
                 }
-                currentNum++;
               }
             }
             ArrayList<PianoKey[]> blackKeys = piano.getBlackPianoKeys();
             int blackKeyPos = 0;
             for (int i = 0; i < blackKeys.size(); i++) {
               for (PianoKey key : blackKeys.get(i)) {
-                if (System.currentTimeMillis() - currentTime >= SEND_PROGRESS_MESSAGE_BREAK_TIME) {
-                  sendProgressMessage(
-                      (int) (((float) currentNum / (float) Piano.PIANO_NUMS) * 100f));
-                  currentTime = System.currentTimeMillis();
-                }
                 try {
-                  blackKeyMusics.put(blackKeyPos, pool.load(context, key.getVoiceId(), 1));
+                  int soundID = pool.load(context, key.getVoiceId(), 1);
+                  blackKeyMusics.put(blackKeyPos, soundID);
                   blackKeyPos++;
                 } catch (Exception e) {
                   isLoading = false;
                   sendErrorMessage(e);
                   return;
                 }
-                currentNum++;
               }
             }
-            isLoadFinish = true;
-            sendProgressMessage(100);
-            sendFinishMessage();
           }
         });
       }
@@ -195,8 +197,6 @@ public class AudioUtils implements LoadAudioMessage {
     if (audioManager != null) {
       volume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
     }
-    Log.e("TAG", "playBlackKeyMusic(AudioUtils.java:" + Thread.currentThread()
-        .getStackTrace()[2].getLineNumber() + ")" + "position:" + position);
     pool.play(whiteKeyMusics.get(position), volume, volume, 1, 0, 1f);
   }
 
@@ -217,8 +217,6 @@ public class AudioUtils implements LoadAudioMessage {
     if (audioManager != null) {
       volume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
     }
-    Log.e("TAG", "playBlackKeyMusic(AudioUtils.java:" + Thread.currentThread()
-        .getStackTrace()[2].getLineNumber() + ")" + "position:" + position);
     pool.play(blackKeyMusics.get(position), volume, volume, 1, 0, 1f);
   }
 
