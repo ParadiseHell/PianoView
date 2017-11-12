@@ -29,7 +29,7 @@ public class AudioUtils implements LoadAudioMessage {
   //线程池,用于加载和播放音频
   private ExecutorService service = Executors.newCachedThreadPool();
   //最大音频数目
-  private final static int MAX_STREAM = 20;
+  private final static int MAX_STREAM = 88;
   private static AudioUtils instance = null;
   //消息ID
   private final static int LOAD_START = 1;
@@ -37,7 +37,7 @@ public class AudioUtils implements LoadAudioMessage {
   private final static int LOAD_ERROR = 3;
   private final static int LOAD_PROGRESS = 4;
   //发送进度的间隙时间
-  private final static int SEND_PROGRESS_MESSAGE_BREAK_TIME = 100;
+  private final static int SEND_PROGRESS_MESSAGE_BREAK_TIME = 500;
   //音频池，用于播放音频
   private SoundPool pool;
   //上下文
@@ -70,7 +70,7 @@ public class AudioUtils implements LoadAudioMessage {
                   .build())
           .build();
     } else {
-      pool = new SoundPool(MAX_STREAM, AudioManager.STREAM_RING, 0);
+      pool = new SoundPool(MAX_STREAM, AudioManager.STREAM_MUSIC, 0);
     }
     audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
   }
