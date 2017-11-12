@@ -26,7 +26,7 @@ import java.util.ArrayList;
 @SuppressWarnings("FieldCanBeLocal") public class MainActivity extends Activity
     implements OnPianoListener, OnLoadAudioListener, SeekBar.OnSeekBarChangeListener,
     View.OnClickListener, OnPianoAutoPlayListener {
-  private static final boolean USE_CONFIG_FILE = false;
+  private static final boolean USE_CONFIG_FILE = true;
   private PianoView pianoView;
   private SeekBar seekBar;
   private Button leftArrow;

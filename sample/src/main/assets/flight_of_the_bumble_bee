@@ -1,7 +1,7 @@
 {
   tune:C;
   frequency:80;
-  name:"flight of the bumble bee";
+  name:"野蜂飞舞";
 }
 
 HO3,HOH2,HOM2,HOH1, HOM1,HO4,HO3,HOH2   |  HO3,HOH2,HOM2,HOH1, HOM1,HOH1,HO2,HOH2  |

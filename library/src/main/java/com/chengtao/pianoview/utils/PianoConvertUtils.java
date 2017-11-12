@@ -2,11 +2,13 @@ package com.chengtao.pianoview.utils;
 
 import android.text.TextUtils;
 import android.util.Log;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -120,11 +122,13 @@ public class PianoConvertUtils {
   public static Object[] convertByInputStream(InputStream is) throws Throwable {
     if (is != null) {
       StringBuilder stringBuilder = new StringBuilder();
-      int data;
+      String line;
       try {
-        while ((data = is.read()) != -1) {
-          stringBuilder.append((char) data);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+        while ((line = reader.readLine()) != null) {
+          stringBuilder.append(line);
         }
+        convertByConfigString(stringBuilder.toString());
       } catch (IOException e) {
         throw new Exception(Error.READ_FILE_EXCEPTION);
       }
@@ -207,6 +211,8 @@ public class PianoConvertUtils {
     }
     result[0] = name;
     result[1] = configString;
+    Log.e("TAG", "convert(PianoConvertUtils.java:" + Thread.currentThread()
+        .getStackTrace()[2].getLineNumber() + ")" + "configString:" + configString);
     // 音符配置
     String musicConfigString = configString.substring(musicNoteConfigStartIndex);
     HashSet<Integer> highSet = new HashSet<>();
