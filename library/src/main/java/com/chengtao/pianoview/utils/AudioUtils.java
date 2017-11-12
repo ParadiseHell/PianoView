@@ -29,7 +29,7 @@ public class AudioUtils implements LoadAudioMessage {
   //线程池,用于加载和播放音频
   private ExecutorService service = Executors.newCachedThreadPool();
   //最大音频数目
-  private final static int MAX_STREAM = 88;
+  private final static int MAX_STREAM = 4;
   private static AudioUtils instance = null;
   //消息ID
   private final static int LOAD_START = 1;
@@ -70,7 +70,7 @@ public class AudioUtils implements LoadAudioMessage {
                   .build())
           .build();
     } else {
-      pool = new SoundPool(MAX_STREAM, AudioManager.STREAM_MUSIC, 0);
+      pool = new SoundPool(MAX_STREAM, AudioManager.STREAM_MUSIC, 100);
     }
     audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
   }
