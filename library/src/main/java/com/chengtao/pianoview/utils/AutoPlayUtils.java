@@ -20,7 +20,7 @@ import java.util.List;
  * Description :
  */
 
-public class AutoPlayUtils {
+@SuppressWarnings("unchecked") public class AutoPlayUtils {
   public static final Gson gson = new GsonBuilder().create();
 
   public static ArrayList<AutoPlayEntity> getAutoPlayEntityListByJsonString(
@@ -56,8 +56,8 @@ public class AutoPlayUtils {
   public static ArrayList<AutoPlayEntity> getAutoPlayEntityListByCustomConfigString(
       String customConfigString) {
     try {
-      return convertToAutoPlayEntityList(
-          PianoConvertUtils.convertByConfigString(customConfigString));
+      Object[] result = PianoConvertUtils.convertByConfigString(customConfigString);
+      return convertToAutoPlayEntityList((List<PianoConvertUtils.PianoKey>) result[2]);
     } catch (Throwable throwable) {
       Log.e("TAG", throwable.getMessage());
     }
@@ -67,15 +67,15 @@ public class AutoPlayUtils {
   public static ArrayList<AutoPlayEntity> getAutoPlayEntityListByCustomConfigInputStream(
       InputStream customConfigInputStream) {
     try {
-      return convertToAutoPlayEntityList(
-          PianoConvertUtils.convertByInputStream(customConfigInputStream));
+      Object[] result = PianoConvertUtils.convertByInputStream(customConfigInputStream);
+      return convertToAutoPlayEntityList((List<PianoConvertUtils.PianoKey>) result[2]);
     } catch (Throwable throwable) {
       Log.e("TAG", throwable.getMessage());
     }
     return null;
   }
 
-  private static ArrayList<AutoPlayEntity> convertToAutoPlayEntityList(
+  public static ArrayList<AutoPlayEntity> convertToAutoPlayEntityList(
       List<PianoConvertUtils.PianoKey> keyList) {
     if (keyList != null && keyList.size() > 0) {
       ArrayList<AutoPlayEntity> list = new ArrayList<>();

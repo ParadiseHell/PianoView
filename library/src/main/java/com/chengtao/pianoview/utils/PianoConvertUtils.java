@@ -1,5 +1,6 @@
 package com.chengtao.pianoview.utils;
 
+import android.text.TextUtils;
 import android.util.Log;
 import java.io.File;
 import java.io.FileInputStream;
@@ -40,6 +41,7 @@ public class PianoConvertUtils {
     public static final String TUNE_NOT_IN_RANGE = "tune not in range [A-G]";
     public static final String FREQUENCY_NOT_NUMBER = "frequency is not number";
     public static final String FREQUENCY_NOT_IN_RANGE = "frequency not int range [60,4000]";
+    public static final String NO_MUSIC_NAME = "no music name";
     public static final String MUSIC_NOTE_CONFIG_WRONG = "music config wrong";
   }
 
@@ -101,7 +103,7 @@ public class PianoConvertUtils {
     }
   }
 
-  public static List<PianoKey> convertByFilePath(String configFilePath) throws Throwable {
+  public static Object[] convertByFilePath(String configFilePath) throws Throwable {
     File file = new File(configFilePath);
     if (file.exists()) {
       try {
@@ -115,16 +117,13 @@ public class PianoConvertUtils {
     }
   }
 
-  public static List<PianoKey> convertByInputStream(InputStream is) throws Throwable {
+  public static Object[] convertByInputStream(InputStream is) throws Throwable {
     if (is != null) {
       StringBuilder stringBuilder = new StringBuilder();
       int data;
       try {
         while ((data = is.read()) != -1) {
-          char charData = (char) data;
-          if (!Character.isWhitespace(charData)) {
-            stringBuilder.append(charData);
-          }
+          stringBuilder.append((char) data);
         }
       } catch (IOException e) {
         throw new Exception(Error.READ_FILE_EXCEPTION);
@@ -135,21 +134,29 @@ public class PianoConvertUtils {
     }
   }
 
-  public static List<PianoKey> convertByConfigString(String configString) throws Throwable {
+  public static Object[] convertByConfigString(String configString) throws Throwable {
     if (configString != null
         && !configString.equals("")
         && configString.indexOf("{") == 0
         && configString.contains("}")) {
-      return convert(configString);
+      StringBuilder stringBuilder = new StringBuilder();
+      for (char c : configString.toCharArray()) {
+        if (!Character.isWhitespace(c)) {//去掉所有空白符
+          stringBuilder.append(c);
+        }
+      }
+      return convert(stringBuilder.toString());
     } else {
       throw new Exception(Error.CONFIG_FILE_WRONG);
     }
   }
 
-  private static List<PianoKey> convert(String configString) throws Throwable {
+  private static Object[] convert(String configString) throws Throwable {
+    Object[] result = new Object[3];
     int currentDoGroup = STANDARD_DO_GROUP;
     int currentDoPosition = STANDARD_DO_POSITION;
     long currentFrequency = STANDARD_FREQUENCY;
+    String name = null;
     StringBuilder baseConfigBuilder = new StringBuilder();
     int musicNoteConfigStartIndex = 0;
     for (char c : configString.toCharArray()) {
@@ -190,9 +197,16 @@ public class PianoConvertUtils {
           if (currentFrequency < 60 || currentFrequency > 4000) {
             throw new Exception(Error.FREQUENCY_NOT_IN_RANGE);
           }
+        } else if (baseConfig.contains("name:")) {
+          name = baseConfig.replace("name:", "");
         }
       }
     }
+    if (TextUtils.isEmpty(name)) {
+      throw new Exception(Error.NO_MUSIC_NAME);
+    }
+    result[0] = name;
+    result[1] = configString;
     // 音符配置
     String musicConfigString = configString.substring(musicNoteConfigStartIndex);
     HashSet<Integer> highSet = new HashSet<>();
@@ -234,7 +248,8 @@ public class PianoConvertUtils {
       highSet.clear();
       lowSet.clear();
     }
-    return pianoKeyList;
+    result[2] = pianoKeyList;
+    return result;
   }
 
   /**

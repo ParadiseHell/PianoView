@@ -1,6 +1,7 @@
 {
 	tune:C;
 	frequency:480;
+	name:"little star";
 }
 
 
