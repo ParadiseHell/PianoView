@@ -8,7 +8,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.util.Log;
 import android.util.SparseIntArray;
 import com.chengtao.pianoview.entity.Piano;
 import com.chengtao.pianoview.entity.PianoKey;
@@ -29,7 +28,7 @@ public class AudioUtils implements LoadAudioMessage {
   //线程池,用于加载和播放音频
   private ExecutorService service = Executors.newCachedThreadPool();
   //最大音频数目
-  private final static int MAX_STREAM = 5;
+  private final static int MAX_STREAM = 3;
   private static AudioUtils instance = null;
   //消息ID
   private final static int LOAD_START = 1;
@@ -59,18 +58,22 @@ public class AudioUtils implements LoadAudioMessage {
 
   @SuppressWarnings("deprecation")
   private AudioUtils(Context context, OnLoadAudioListener loadAudioListener) {
+    this(context, loadAudioListener, MAX_STREAM);
+  }
+
+  private AudioUtils(Context context, OnLoadAudioListener loadAudioListener, int maxStream) {
     this.context = context;
     this.loadAudioListener = loadAudioListener;
     handler = new AudioStatusHandler(context.getMainLooper());
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-      pool = new SoundPool.Builder().setMaxStreams(MAX_STREAM)
+      pool = new SoundPool.Builder().setMaxStreams(maxStream)
           .setAudioAttributes(
               new AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                   .setUsage(AudioAttributes.USAGE_MEDIA)
                   .build())
           .build();
     } else {
-      pool = new SoundPool(MAX_STREAM, AudioManager.STREAM_MUSIC, 0);
+      pool = new SoundPool(maxStream, AudioManager.STREAM_MUSIC, 0);
     }
     audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
   }
@@ -81,6 +84,18 @@ public class AudioUtils implements LoadAudioMessage {
       synchronized (AudioUtils.class) {
         if (instance == null || instance.pool == null) {
           instance = new AudioUtils(context, listener);
+        }
+      }
+    }
+    return instance;
+  }
+
+  public static AudioUtils getInstance(Context context, OnLoadAudioListener listener,
+      int maxStream) {
+    if (instance == null || instance.pool == null) {
+      synchronized (AudioUtils.class) {
+        if (instance == null || instance.pool == null) {
+          instance = new AudioUtils(context, listener, maxStream);
         }
       }
     }

@@ -524,6 +524,24 @@ public class PianoView extends View {
     this.progress = progress;
   }
 
+  /**
+   * 设置soundPool maxStream
+   *
+   * @param maxStream maxStream
+   */
+  public void setSoundPollMaxStream(int maxStream) {
+    if (utils != null) {
+      utils.stop();
+      utils = null;
+    }
+    utils = AudioUtils.getInstance(getContext(), loadAudioListener, maxStream);
+    try {
+      utils.loadMusic(piano);
+    } catch (Exception e) {
+      Log.e(TAG, e.getMessage());
+    }
+  }
+
   //接口
 
   /**
