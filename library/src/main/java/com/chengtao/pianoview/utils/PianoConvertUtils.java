@@ -144,9 +144,29 @@ public class PianoConvertUtils {
         && configString.indexOf("{") == 0
         && configString.contains("}")) {
       StringBuilder stringBuilder = new StringBuilder();
+      boolean nameStart = false;
+      boolean nameEnd = false;
       for (char c : configString.toCharArray()) {
-        if (!Character.isWhitespace(c)) {//去掉所有空白符
+        if (!nameStart || nameEnd) {//读取名称没有开始或者已经结束
+          if (!Character.isWhitespace(c)) {//去掉所有空白符
+            stringBuilder.append(c);
+          }
+        } else {
           stringBuilder.append(c);
+        }
+        if (!nameStart) {
+          if (c == ':') {
+            int length = stringBuilder.length();
+            if (length >= 5) {
+              String name = stringBuilder.substring(length - 5, length - 1);
+              if (name.equals("name")) {
+                nameStart = true;
+              }
+            }
+          }
+        }
+        if (nameStart && (c == ';' || c == '}')) {
+          nameEnd = true;
         }
       }
       return convert(stringBuilder.toString());
@@ -221,7 +241,6 @@ public class PianoConvertUtils {
     for (String musicNotePart : musicConfigString.split("\\|")) {
       for (String musicNote : musicNotePart.split(",")) {
         if (!musicNote.equals("")) {
-          Log.e("TAG", musicNote);
           if (musicNote.matches(MUSIC_NUMBER_REGEX)) {
             addNumberKey(currentDoGroup, currentDoPosition, currentFrequency, highSet, lowSet,
                 pianoKeyList, musicNote, false, false);
