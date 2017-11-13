@@ -26,10 +26,10 @@ Add the dependency:
 
 ```gradle
 dependencies {
-        compile 'com.github.ParadiseHell:PianoView:1.0.4'
+        compile 'com.github.ParadiseHell:PianoView:1.0.5'
 }
 ```
-
+o
 ## How to use
 
 In the `XML` layout:

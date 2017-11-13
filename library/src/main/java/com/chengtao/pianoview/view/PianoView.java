@@ -26,6 +26,7 @@ import com.chengtao.pianoview.listener.OnPianoAutoPlayListener;
 import com.chengtao.pianoview.listener.OnPianoListener;
 import com.chengtao.pianoview.utils.AudioUtils;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -368,7 +369,7 @@ public class PianoView extends View {
    *
    * @param autoPlayEntities 自动播放实体列表
    */
-  public void autoPlay(final ArrayList<AutoPlayEntity> autoPlayEntities) {
+  public void autoPlay(final List<AutoPlayEntity> autoPlayEntities) {
     if (isAutoPlaying) {
       return;
     }
@@ -644,10 +645,6 @@ public class PianoView extends View {
 
   @Override protected void onRestoreInstanceState(Parcelable state) {
     super.onRestoreInstanceState(state);
-    postDelayed(new Runnable() {
-      @Override public void run() {
-        scroll(progress);
-      }
-    }, 200);
+    postDelayed(() -> scroll(progress), 200);
   }
 }
