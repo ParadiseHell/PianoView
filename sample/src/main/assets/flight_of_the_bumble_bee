@@ -1,14 +1,36 @@
 {
   tune:C;
-  frequency:80;
+  frequency:100;
   name:"野蜂飞舞";
 }
 
-HO3,HOH2,HOM2,HOH1, HOM1,HO4,HO3,HOH2   |  HO3,HOH2,HOM2,HOH1, HOM1,HOH1,HO2,HOH2  |
-HO3,HOH2,HOM2,HOH1, HOM1,HO4,HO3,HOH2   |  HO3,HOH2,HOM2,HOH1, HOM1,HOH1,HO2,HOH2  |
-HO3,HOH2,HOM2,HOH1, HO2,HO1,HOM1,7      |  HO1,HOH1,HO2,HOH2,  HO3,HO4,HO3*2       |
-HO3,HOH2,HOM2,HOH1, HO2,HO1,HOM1,7      |  HO1,HOH1,HO2,HOH2,  HO3,HOH4,HO5*2      |
-HO6,HOH5,HOM5,HOH4, HOM4,HOL7,HO6,HOH5  |  HO6,HOH5,HOM5,HOH4, HOM4,HOH4,HO5,HOH5  |
-HO6,HOH5,HOM5,HOH4, HOM4,HOL7,HO6,HOH5  |  HO6,HOH5,HOM5,HOH4, HOM4,HOH4,HO5,HOH5  |
-HO6,HOH5,HOM5,HOH4, HO5,HO4,HOM4,HO3    |  HO4,HOH4,HO5,HOH5,  HO6,HOL7,HO6*2      |
-HO6,HOH5,HOM5,HOH4, HO3,HO2,HOM2,HO1    |  HO4,HOH4,HO5,HOH5,  HO6,HOL7,HO6*2
+0*8                                      |  HO3,HOH2,HOM2,HOH1,  HOM1,HO4,HO3,HOH2   |
+HO3,HOH2,HOM2,HOH1,  HOM1,HOH1,HO2,HOH2  |  HO3,HOH2,HOM2,HOH1,  HOM1,HO4,HO3,HOH2   |
+HO3,HOH2,HOM2,HOH1,  HOM1,HOH1,HO2,HOH2  |  HO3,HOH2,HOM2,HOH1,  HO2,HO1,HOM1,7      |
+HO1,HOH1,HO2,HOH2,   HO3,HO4,HO3*2       |  HO3,HOH2,HOM2,HOH1,  HO2,HO1,HOM1,7      |
+HO1,HOH1,HO2,HOH2,   HO3,HOH4,HO5*2      |  HO6,HOH5,HOM5,HOH4,  HOM4,HOL7,HO6,HOH5  |
+HO6,HOH5,HOM5,HOH4,  HOM4,HOH4,HO5,HOH5  |  HO6,HOH5,HOM5,HOH4,  HOM4,HOL7,HO6,HOH5  |
+HO6,HOH5,HOM5,HOH4,  HOM4,HOH4,HO5,HOH5  |  HO6,HOH5,HOM5,HOH4,  HO5,HO4,HOM4,HO3    |
+HO4,HOH4,HO5,HOH5,   HO6,HOL7,HO6*2      |  HO6,HOH5,HOM5,HOH4,  HO3,HO2,HOM2,HO1    |
+HO4,HOH4,HO5,HOH5,   HO6,HOL7,HO6*2      |  0*8                                      |
+LO6,LOL7,LO6,LOH5,   LO6,LO7,LO6,LO5     |  LO6,LOL7,LO6,LOH5,   LO6,LO7,LO6,LO5     |
+LO6,LO7,LOM7,1,      L2,1,LO7,LOL6       |  LO6,LOL7,LOM7,1,     H1,2,H2,3           |
+4*2,0*2,             0*4                 |  0*8                                      |
+2,L3,2,H1,           2,3,2,1             |  2,L3,2,H1,           2,3,2,1             |
+2,L3,M3,4,           H4,M4,3,4           |  H4,5,H5,6,           H6,7,HO1,HOH1       |
+HO2,HOH1,HOM1,7,     L7,HOL3,HO2,HOH1    |  HO2,HOH1,HOM1,7,     L7,M7,HO1,HOH1      |
+HO2,HOH1,HOM1,7,     HO1,7,L7,6          |  L7,M7,HO1,HOH1,      HOM1,HOH1,HO2,HOH2  |
+HO3,HOH2,HOM2,HOH1,  HO2,HO1,HOM1,7      |  HO1,7,L7,6,          L6,5,H4,M4          |
+3,4,3,H2,            3,4,3,2             |  3,4,3,H2,            3,4,3,2             |
+3,4,3,H2,            3,4,3,2             |  3,4,3,H2,            3,4,3,2             |
+3*2,0*6                                  |  0*8                                      |
+HO4,HOH2,HOM2,HO1,   HOM1,HO4,HO3,HOH2   |  HO3,HOH2,HOM2,HOH1,  HOM1,HOH1,HO2,HOH2  |
+HO3,HOH2,HOM2,HOH1,  HOM1,HO4,HO3,HOH2   |  HO3,HOH2,HOM2,HOH1,  HOM1,HOH1,HO2,HOH2  |
+HO3*2,H5,6,          L7,H7,HO1,HOH1      |  HO2,HOH1,HOM1,7,     HO1,7,L7,6          |
+H5,6,L7,M7,          HO1,HOH1,HO2,HOH2   |  HO3,HOM4,HO3,HOH2,   HO3,HOH4,HO5,HOH5   |
+HO6,HOH5,HOM5,HOH4,  HO5,HO4,HOM4,HO3    |  HO4,HO3,HOH2,HOM2,   HOH1,HOM1,7,L7      |
+6,H5,M5,H4,          5,4,M4,3            |  4,3,H2,M2,           H1,M1,LO7,LOL7      |
+LO6,LOL7,LO6,LOH5,   LO6,LO7,LO6,LO5     |  LO6,LOL7,LO6,LOH5,   LO6,LO7,1,2         |
+3,4,3,H2,            3,4,3,2             |  3,4,3,H2,            3,H4,5,H5           |
+6*2,0*2,             0*4                 |  3*2,0*2,             0*4                 |
+6*2,0*2,             0*4                 |  0*8

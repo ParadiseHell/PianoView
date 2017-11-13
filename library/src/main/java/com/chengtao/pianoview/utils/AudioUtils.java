@@ -29,7 +29,7 @@ public class AudioUtils implements LoadAudioMessage {
   //线程池,用于加载和播放音频
   private ExecutorService service = Executors.newCachedThreadPool();
   //最大音频数目
-  private final static int MAX_STREAM = 4;
+  private final static int MAX_STREAM = 5;
   private static AudioUtils instance = null;
   //消息ID
   private final static int LOAD_START = 1;
@@ -70,7 +70,7 @@ public class AudioUtils implements LoadAudioMessage {
                   .build())
           .build();
     } else {
-      pool = new SoundPool(MAX_STREAM, AudioManager.STREAM_MUSIC, 100);
+      pool = new SoundPool(MAX_STREAM, AudioManager.STREAM_MUSIC, 0);
     }
     audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
   }
@@ -100,52 +100,48 @@ public class AudioUtils implements LoadAudioMessage {
     if (piano != null) {
       if (!isLoading && !isLoadFinish) {
         isLoading = true;
-        pool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
-          @Override public void onLoadComplete(SoundPool soundPool, int sampleId, int status) {
-            loadNum++;
-            if (loadNum == Piano.PIANO_NUMS) {
-              isLoadFinish = true;
-              sendProgressMessage(100);
-              sendFinishMessage();
-            } else {
-              if (System.currentTimeMillis() - currentTime >= SEND_PROGRESS_MESSAGE_BREAK_TIME) {
-                sendProgressMessage((int) (((float) loadNum / (float) Piano.PIANO_NUMS) * 100f));
-                currentTime = System.currentTimeMillis();
-              }
+        pool.setOnLoadCompleteListener((soundPool, sampleId, status) -> {
+          loadNum++;
+          if (loadNum == Piano.PIANO_NUMS) {
+            isLoadFinish = true;
+            sendProgressMessage(100);
+            sendFinishMessage();
+          } else {
+            if (System.currentTimeMillis() - currentTime >= SEND_PROGRESS_MESSAGE_BREAK_TIME) {
+              sendProgressMessage((int) (((float) loadNum / (float) Piano.PIANO_NUMS) * 100f));
+              currentTime = System.currentTimeMillis();
             }
           }
         });
-        service.execute(new Runnable() {
-          @Override public void run() {
-            sendStartMessage();
-            ArrayList<PianoKey[]> whiteKeys = piano.getWhitePianoKeys();
-            int whiteKeyPos = 0;
-            for (int i = 0; i < whiteKeys.size(); i++) {
-              for (PianoKey key : whiteKeys.get(i)) {
-                try {
-                  int soundID = pool.load(context, key.getVoiceId(), 1);
-                  whiteKeyMusics.put(whiteKeyPos, soundID);
-                  whiteKeyPos++;
-                } catch (Exception e) {
-                  isLoading = false;
-                  sendErrorMessage(e);
-                  return;
-                }
+        service.execute(() -> {
+          sendStartMessage();
+          ArrayList<PianoKey[]> whiteKeys = piano.getWhitePianoKeys();
+          int whiteKeyPos = 0;
+          for (int i = 0; i < whiteKeys.size(); i++) {
+            for (PianoKey key : whiteKeys.get(i)) {
+              try {
+                int soundID = pool.load(context, key.getVoiceId(), 1);
+                whiteKeyMusics.put(whiteKeyPos, soundID);
+                whiteKeyPos++;
+              } catch (Exception e) {
+                isLoading = false;
+                sendErrorMessage(e);
+                return;
               }
             }
-            ArrayList<PianoKey[]> blackKeys = piano.getBlackPianoKeys();
-            int blackKeyPos = 0;
-            for (int i = 0; i < blackKeys.size(); i++) {
-              for (PianoKey key : blackKeys.get(i)) {
-                try {
-                  int soundID = pool.load(context, key.getVoiceId(), 1);
-                  blackKeyMusics.put(blackKeyPos, soundID);
-                  blackKeyPos++;
-                } catch (Exception e) {
-                  isLoading = false;
-                  sendErrorMessage(e);
-                  return;
-                }
+          }
+          ArrayList<PianoKey[]> blackKeys = piano.getBlackPianoKeys();
+          int blackKeyPos = 0;
+          for (int i = 0; i < blackKeys.size(); i++) {
+            for (PianoKey key : blackKeys.get(i)) {
+              try {
+                int soundID = pool.load(context, key.getVoiceId(), 1);
+                blackKeyMusics.put(blackKeyPos, soundID);
+                blackKeyPos++;
+              } catch (Exception e) {
+                isLoading = false;
+                sendErrorMessage(e);
+                return;
               }
             }
           }
@@ -163,16 +159,14 @@ public class AudioUtils implements LoadAudioMessage {
     if (key != null) {
       if (isLoadFinish) {
         if (key.getType() != null) {
-          service.execute(new Runnable() {
-            @Override public void run() {
-              switch (key.getType()) {
-                case BLACK:
-                  playBlackKeyMusic(key.getGroup(), key.getPositionOfGroup());
-                  break;
-                case WHITE:
-                  playWhiteKeyMusic(key.getGroup(), key.getPositionOfGroup());
-                  break;
-              }
+          service.execute(() -> {
+            switch (key.getType()) {
+              case BLACK:
+                playBlackKeyMusic(key.getGroup(), key.getPositionOfGroup());
+                break;
+              case WHITE:
+                playWhiteKeyMusic(key.getGroup(), key.getPositionOfGroup());
+                break;
             }
           });
         }

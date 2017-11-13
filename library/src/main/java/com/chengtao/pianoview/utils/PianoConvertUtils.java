@@ -26,12 +26,12 @@ public class PianoConvertUtils {
   private static final int STANDARD_DO_POSITION = 0;
   private static final long STANDARD_FREQUENCY = 240;
   private static final String NUMBER_REGEX = "^\\d+$";
-  private static final String MUSIC_NUMBER_REGEX = "^[0-7](\\*(0\\.25|0\\.5|2|4))?$";
-  private static final String MUSIC_HML_NUMBER_REGEX = "^[H,M,L][0-7](\\*(0\\.25|0\\.5|2|4))?$";
+  private static final String MUSIC_NUMBER_REGEX = "^[0-7](\\*(0\\.25|0\\.5|2|4|6|8))?$";
+  private static final String MUSIC_HML_NUMBER_REGEX = "^[H,M,L][0-7](\\*(0\\.25|0\\.5|2|4|6|8))?$";
   private static final String MUSIC_HO_NUMBER_LO_NUMBER_REGEX =
-      "^HO[0-7](\\*(0\\.25|0\\.5|2|4))?$|^LO[0-7](\\*(0\\.25|0\\.5|2|4))?$";
+      "^HO[0-7](\\*(0\\.25|0\\.5|2|4))?$|^LO[0-7](\\*(0\\.25|0\\.5|2|4|6|8))?$";
   private static final String MUSIC_HO_HML_NUMBER_LO_HML_NUMBER_REGEX =
-      "^HO[H,M,L][0-7](\\*(0\\.25|0\\.5|2|4))?$|^LO[H,M,L][0-7](\\*(0\\.25|0\\.5|2|4))?$";
+      "^HO[H,M,L][0-7](\\*(0\\.25|0\\.5|2|4))?$|^LO[H,M,L][0-7](\\*(0\\.25|0\\.5|2|4|6|8))?$";
   private static final HashSet<Integer> HIGH_BLACK = new HashSet<>(Arrays.asList(1, 2, 4, 5, 6));
   private static final HashSet<Integer> LOW_BLACK = new HashSet<>(Arrays.asList(7, 4, 5, 3, 2));
 
