@@ -74,6 +74,8 @@ public class PianoView extends View {
   private boolean isInitFinish = false;
   private int minRange = 0;
   private int maxRange = 0;
+  //
+  private int maxStream;
   //自动播放Handler
   private Handler autoPlayHandler = new Handler(Looper.myLooper()) {
     @Override public void handleMessage(Message msg) {
@@ -118,16 +120,13 @@ public class PianoView extends View {
     int height = MeasureSpec.getSize(heightMeasureSpec);
     //设置高度
     switch (heightMode) {
-      case MeasureSpec.EXACTLY:
-        Log.e(TAG, "EXACTLY");
-        break;
       case MeasureSpec.AT_MOST:
-        Log.e(TAG, "AT_MOST");
         height = Math.min(height, whiteKeyHeight);
         break;
       case MeasureSpec.UNSPECIFIED:
-        Log.e(TAG, "UNSPECIFIED");
         height = whiteKeyHeight;
+        break;
+      default:
         break;
     }
     //设置缩放比例
@@ -149,7 +148,11 @@ public class PianoView extends View {
       blackPianoKeys = piano.getBlackPianoKeys();
       //初始化播放器
       if (utils == null) {
-        utils = AudioUtils.getInstance(getContext(), loadAudioListener);
+        if (maxStream > 0) {
+          utils = AudioUtils.getInstance(getContext(), loadAudioListener, maxStream);
+        } else {
+          utils = AudioUtils.getInstance(getContext(), loadAudioListener);
+        }
         try {
           utils.loadMusic(piano);
         } catch (Exception e) {
@@ -225,6 +228,8 @@ public class PianoView extends View {
           Log.e(TAG, "ACTION_UP:" + event.getActionIndex());
           handleUp();
           this.performClick();
+          break;
+        default:
           break;
       }
       return true;
@@ -430,6 +435,8 @@ public class PianoView extends View {
                         autoPlayHandler.sendMessage(msg);
                       }
                       break;
+                    default:
+                      break;
                   }
                 }
                 Thread.sleep(entity.getCurrentBreakTime() / 2);
@@ -530,16 +537,7 @@ public class PianoView extends View {
    * @param maxStream maxStream
    */
   public void setSoundPollMaxStream(int maxStream) {
-    if (utils != null) {
-      utils.stop();
-      utils = null;
-    }
-    utils = AudioUtils.getInstance(getContext(), loadAudioListener, maxStream);
-    try {
-      utils.loadMusic(piano);
-    } catch (Exception e) {
-      Log.e(TAG, e.getMessage());
-    }
+    this.maxStream = maxStream;
   }
 
   //接口

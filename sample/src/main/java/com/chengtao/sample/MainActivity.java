@@ -48,6 +48,7 @@ import java.util.ArrayList;
     setContentView(R.layout.activity_main);
     //view
     pianoView = findViewById(R.id.pv);
+    pianoView.setSoundPollMaxStream(10);
     seekBar = findViewById(R.id.sb);
     seekBar.setThumbOffset((int) convertDpToPixel(SEEKBAR_OFFSET_SIZE));
     leftArrow = findViewById(R.id.iv_left_arrow);
