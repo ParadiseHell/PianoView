@@ -9,9 +9,9 @@ A custom view on Android,which can help you easily to create a piano on Android.
 - Good flexibility,which can use in different devices and layout.
 - Two interface,which can help user to use this view better.
 - Mutil-Touch.
-i
+
 ## Gradle Dependency
-i
+
 Add it in your root `build.gradle` at the end of repositories:
 
 ```gradle
@@ -26,10 +26,10 @@ Add the dependency:
 
 ```gradle
 dependencies {
-        compile 'com.github.ParadiseHell:PianoView:1.0.8'
+        compile 'com.github.ParadiseHell:PianoView:1.1.0'
 }
 ```
-o
+
 ## How to use
 
 In the `XML` layout:
