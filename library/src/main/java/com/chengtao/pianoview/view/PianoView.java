@@ -225,7 +225,6 @@ public class PianoView extends View {
           break;
         //但最后一个手指抬起的时候
         case MotionEvent.ACTION_UP:
-          Log.e(TAG, "ACTION_UP:" + event.getActionIndex());
           handleUp();
           this.performClick();
           break;

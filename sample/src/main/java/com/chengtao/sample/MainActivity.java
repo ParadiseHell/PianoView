@@ -26,6 +26,8 @@ import java.util.ArrayList;
 @SuppressWarnings("FieldCanBeLocal") public class MainActivity extends Activity
     implements OnPianoListener, OnLoadAudioListener, SeekBar.OnSeekBarChangeListener,
     View.OnClickListener, OnPianoAutoPlayListener {
+  //flight_of_the_bumble_bee,simple_little_star_config
+  private static final String CONFIG_FILE_NAME = "simple_little_star_config";
   private static final boolean USE_CONFIG_FILE = true;
   private PianoView pianoView;
   private SeekBar seekBar;
@@ -67,7 +69,7 @@ import java.util.ArrayList;
       AssetManager assetManager = getAssets();
       try {
         litterStarList = AutoPlayUtils.getAutoPlayEntityListByCustomConfigInputStream(
-            assetManager.open("flight_of_the_bumble_bee"));
+            assetManager.open(CONFIG_FILE_NAME));
       } catch (IOException e) {
         Log.e("TAG", e.getMessage());
       }
@@ -173,8 +175,6 @@ import java.util.ArrayList;
 
   @Override public void onPianoClick(Piano.PianoKeyType type, Piano.PianoVoice voice, int group,
       int positionOfGroup) {
-    Log.e("TAG", "Type:" + type + "---Voice:" + voice);
-    Log.e("TAG", "Group:" + group + "---" + "Position:" + positionOfGroup);
   }
 
   @Override public void loadPianoAudioStart() {

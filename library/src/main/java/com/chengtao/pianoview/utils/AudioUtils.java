@@ -28,7 +28,7 @@ public class AudioUtils implements LoadAudioMessage {
   //线程池,用于加载和播放音频
   private ExecutorService service = Executors.newCachedThreadPool();
   //最大音频数目
-  private final static int MAX_STREAM = 5;
+  private final static int MAX_STREAM = 11;
   private static AudioUtils instance = null;
   //消息ID
   private final static int LOAD_START = 1;
@@ -55,11 +55,8 @@ public class AudioUtils implements LoadAudioMessage {
   private AudioManager audioManager;
   private long currentTime;
   private int loadNum;
-
-  @SuppressWarnings("deprecation")
-  private AudioUtils(Context context, OnLoadAudioListener loadAudioListener) {
-    this(context, loadAudioListener, MAX_STREAM);
-  }
+  private int minSoundId = -1;
+  private int maxSoundId = -1;
 
   private AudioUtils(Context context, OnLoadAudioListener loadAudioListener, int maxStream) {
     this.context = context;
@@ -73,21 +70,14 @@ public class AudioUtils implements LoadAudioMessage {
                   .build())
           .build();
     } else {
-      pool = new SoundPool(maxStream, AudioManager.STREAM_SYSTEM, 0);
+      pool = new SoundPool(maxStream, AudioManager.STREAM_MUSIC, 1);
     }
     audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
   }
 
   //单例模式，只返回一个工具实例
   public static AudioUtils getInstance(Context context, OnLoadAudioListener listener) {
-    if (instance == null || instance.pool == null) {
-      synchronized (AudioUtils.class) {
-        if (instance == null || instance.pool == null) {
-          instance = new AudioUtils(context, listener);
-        }
-      }
-    }
-    return instance;
+    return getInstance(context, listener, MAX_STREAM);
   }
 
   public static AudioUtils getInstance(Context context, OnLoadAudioListener listener,
@@ -121,6 +111,8 @@ public class AudioUtils implements LoadAudioMessage {
             isLoadFinish = true;
             sendProgressMessage(100);
             sendFinishMessage();
+            //静音播放一个音频,防止延时
+            pool.play(whiteKeyMusics.get(0), 0, 0, 1, -1, 2f);
           } else {
             if (System.currentTimeMillis() - currentTime >= SEND_PROGRESS_MESSAGE_BREAK_TIME) {
               sendProgressMessage((int) (((float) loadNum / (float) Piano.PIANO_NUMS) * 100f));
@@ -137,6 +129,9 @@ public class AudioUtils implements LoadAudioMessage {
               try {
                 int soundID = pool.load(context, key.getVoiceId(), 1);
                 whiteKeyMusics.put(whiteKeyPos, soundID);
+                if (minSoundId == -1) {
+                  minSoundId = soundID;
+                }
                 whiteKeyPos++;
               } catch (Exception e) {
                 isLoading = false;
@@ -153,6 +148,9 @@ public class AudioUtils implements LoadAudioMessage {
                 int soundID = pool.load(context, key.getVoiceId(), 1);
                 blackKeyMusics.put(blackKeyPos, soundID);
                 blackKeyPos++;
+                if (soundID > maxSoundId) {
+                  maxSoundId = soundID;
+                }
               } catch (Exception e) {
                 isLoading = false;
                 sendErrorMessage(e);
@@ -202,11 +200,7 @@ public class AudioUtils implements LoadAudioMessage {
     } else {
       position = (group - 1) * 7 + 2 + positionOfGroup;
     }
-    int volume = 1;
-    if (audioManager != null) {
-      volume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
-    }
-    pool.play(whiteKeyMusics.get(position), volume, volume, 1, 0, 1f);
+    play(whiteKeyMusics.get(position));
   }
 
   /**
@@ -222,11 +216,20 @@ public class AudioUtils implements LoadAudioMessage {
     } else {
       position = (group - 1) * 5 + 1 + positionOfGroup;
     }
-    int volume = 1;
+    play(blackKeyMusics.get(position));
+  }
+
+  private void play(int soundId) {
+    float volume = 1;
     if (audioManager != null) {
-      volume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+      float actualVolume = (float) audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+      float maxVolume = (float) audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+      volume = actualVolume / maxVolume;
     }
-    pool.play(blackKeyMusics.get(position), volume, volume, 1, 0, 1f);
+    if (volume <= 0) {
+      volume = 1f;
+    }
+    pool.play(soundId, volume, volume, 1, 0, 1f);
   }
 
   /**
