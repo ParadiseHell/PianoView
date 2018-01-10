@@ -5,10 +5,10 @@
 A custom view on Android,which can help you easily to create a piano on Android.
 
 ## Features
-- Beautiful UI
+- Beautiful UI.
 - Good flexibility,which can use in different devices and layout.
-- Two interface,which can help user to use this view better.
 - Mutil-Touch.
+- Support piano sound.
 
 ## Gradle Dependency
 
