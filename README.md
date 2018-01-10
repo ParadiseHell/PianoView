@@ -43,6 +43,11 @@ In the `XML` layout:
 
 For more reference,plaese see the [sample](./sample).
 
+## Document
+
+- [English](https://github.com/ParadiseHell/PianoView/wiki)
+- [中文](https://github.com/ParadiseHell/PianoView/wiki/首页)
+
 ## License
 
     Copyright 2016 ChengTao
