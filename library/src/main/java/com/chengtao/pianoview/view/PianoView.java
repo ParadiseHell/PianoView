@@ -11,6 +11,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
@@ -46,7 +47,7 @@ public class PianoView extends View {
   //定义标识音名的正方形
   private RectF square;
   //正方形背景颜色
-  private String pianoColors[] = {
+  private String[] pianoColors = {
       "#C0C0C0", "#A52A2A", "#FF8C00", "#FFFF00", "#00FA9A", "#00CED1", "#4169E1", "#FFB6C1",
       "#FFEBCD"
   };
@@ -78,7 +79,8 @@ public class PianoView extends View {
   private int maxStream;
   //自动播放Handler
   private Handler autoPlayHandler = new Handler(Looper.myLooper()) {
-    @Override public void handleMessage(Message msg) {
+    @Override
+    public void handleMessage(Message msg) {
       handleAutoPlay(msg);
     }
   };
@@ -89,7 +91,8 @@ public class PianoView extends View {
   private static final int HANDLE_AUTO_PLAY_WHITE_DOWN = 3;
   private static final int HANDLE_AUTO_PLAY_KEY_UP = 4;
 
-  //构造函数
+  //<editor-fold desc="构造函数">
+
   public PianoView(Context context) {
     this(context, null);
   }
@@ -108,8 +111,10 @@ public class PianoView extends View {
     //初始化正方形
     square = new RectF();
   }
+  //</editor-fold>
 
-  @Override protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+  @Override
+  protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
     Log.e(TAG, "onMeasure");
     Drawable whiteKeyDrawable = ContextCompat.getDrawable(context, R.drawable.white_piano_key);
     //最小高度
@@ -136,7 +141,8 @@ public class PianoView extends View {
     setMeasuredDimension(width, height);
   }
 
-  @Override protected void onDraw(Canvas canvas) {
+  @Override
+  protected void onDraw(@NonNull Canvas canvas) {
     //初始化钢琴
     if (piano == null) {
       minRange = 0;
@@ -199,7 +205,8 @@ public class PianoView extends View {
     }
   }
 
-  @Override public boolean onTouchEvent(MotionEvent event) {
+  @Override
+  public boolean onTouchEvent(MotionEvent event) {
     if (canPress) {
       switch (event.getAction()) {
         //当第一个手指点击按键的时候
@@ -235,10 +242,6 @@ public class PianoView extends View {
     } else {
       return false;
     }
-  }
-
-  @Override public boolean performClick() {
-    return super.performClick();
   }
 
   /**
@@ -658,7 +661,8 @@ public class PianoView extends View {
     }
   }
 
-  @Override protected void onRestoreInstanceState(Parcelable state) {
+  @Override
+  protected void onRestoreInstanceState(Parcelable state) {
     super.onRestoreInstanceState(state);
     postDelayed(() -> scroll(progress), 200);
   }

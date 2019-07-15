@@ -8,6 +8,7 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.ScaleDrawable;
+import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.view.Gravity;
 import com.chengtao.pianoview.R;
@@ -40,12 +41,18 @@ public class Piano {
   //上下文
   private Context context;
 
-  //构造函数
-  public Piano(Context context, float scale) {
+  //<editor-fold desc="构造函数">
+
+  public Piano(@NonNull Context context) {
+    this(context, 0);
+  }
+
+  public Piano(@NonNull Context context, float scale) {
     this.context = context;
     this.scale = scale;
     initPiano();
   }
+  //</editor-fold>
 
   private void initPiano() {
     if (scale > 0) {
@@ -59,7 +66,7 @@ public class Piano {
 
       //初始化黑键
       for (int i = 0; i < BLACK_PIANO_KEY_GROUPS; i++) {
-        PianoKey keys[];
+        PianoKey[] keys;
         switch (i) {
           case 0:
             keys = new PianoKey[1];
@@ -70,7 +77,7 @@ public class Piano {
         }
         for (int j = 0; j < keys.length; j++) {
           keys[j] = new PianoKey();
-          Rect areaOfKey[] = new Rect[1];
+          Rect[] areaOfKey = new Rect[1];
           keys[j].setType(PianoKeyType.BLACK);
           keys[j].setGroup(i);
           keys[j].setPositionOfGroup(j);

@@ -25,7 +25,8 @@ public class AutoPlayEntity {
   /**
    * 当前按键与之后按键的间隔时间
    */
-  @SerializedName("break") private long currentBreakTime;
+  @SerializedName("break")
+  private long currentBreakTime;
 
   public AutoPlayEntity() {
   }
@@ -69,7 +70,8 @@ public class AutoPlayEntity {
     this.currentBreakTime = currentBreakTime;
   }
 
-  @Override public String toString() {
+  @Override
+  public String toString() {
     return "AutoPlayEntity{"
         + "type="
         + type

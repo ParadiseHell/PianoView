@@ -4,49 +4,56 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@drawable/background">
+    android:background="@drawable/background"
+    >
 
-    <LinearLayout
-        android:padding="10dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-        <Button
-            android:id="@+id/iv_left_arrow"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="@drawable/left_arrow"
-            android:layout_marginEnd="15dp"
-            android:layout_marginStart="0dp"/>
+  <LinearLayout
+      android:padding="10dp"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="horizontal"
+      >
+    <Button
+        android:id="@+id/iv_left_arrow"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@drawable/left_arrow"
+        android:layout_marginEnd="15dp"
+        android:layout_marginStart="0dp"
+        />
 
-        <SeekBar
-            android:background="@drawable/piano_bar"
-            android:id="@+id/sb"
-            android:progressDrawable="@null"
-            android:thumb="@drawable/seekbar_thumb"
-            android:padding="0dp"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="match_parent"
-            android:layout_gravity="center"/>
+    <SeekBar
+        android:background="@drawable/piano_bar"
+        android:id="@+id/sb"
+        android:progressDrawable="@null"
+        android:thumb="@drawable/seekbar_thumb"
+        android:padding="0dp"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        />
 
-        <Button
-            android:id="@+id/iv_right_arrow"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="@drawable/right_arrow"
-            android:layout_marginEnd="10dp"
-            android:layout_marginStart="15dp"/>
-        <Button
-            android:id="@+id/iv_music"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="@drawable/music" />
-    </LinearLayout>
+    <Button
+        android:id="@+id/iv_right_arrow"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@drawable/right_arrow"
+        android:layout_marginEnd="10dp"
+        android:layout_marginStart="15dp"
+        />
+    <Button
+        android:id="@+id/iv_music"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@drawable/music"
+        />
+  </LinearLayout>
 
-    <com.chengtao.pianoview.view.PianoView
-        android:id="@+id/pv"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-    </com.chengtao.pianoview.view.PianoView>
+  <com.chengtao.pianoview.view.PianoView
+      android:id="@+id/pv"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      >
+  </com.chengtao.pianoview.view.PianoView>
 </LinearLayout>

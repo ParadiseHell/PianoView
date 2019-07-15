@@ -1,4 +1,4 @@
-package com.chengtao.sample;
+package com.chengtao.pianoview.sample;
 
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
@@ -23,7 +23,8 @@ import com.chengtao.pianoview.view.PianoView;
 import java.io.IOException;
 import java.util.ArrayList;
 
-@SuppressWarnings("FieldCanBeLocal") public class MainActivity extends Activity
+@SuppressWarnings("FieldCanBeLocal")
+public final class MainActivity extends Activity
     implements OnPianoListener, OnLoadAudioListener, SeekBar.OnSeekBarChangeListener,
     View.OnClickListener, OnPianoAutoPlayListener {
   //flight_of_the_bumble_bee,simple_little_star_config
