@@ -3,7 +3,6 @@ package com.chengtao.pianoview.utils;
 import android.text.TextUtils;
 import android.util.Log;
 import com.chengtao.pianoview.entity.AutoPlayEntity;
-import com.chengtao.pianoview.entity.Piano;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -13,14 +12,14 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Author : ChengTao(chengtaolearn@163.com)
- * Date : 11/3/17
- * Time : 10:17 AM
- * Description :
+/*
+ * 自动播放工具类
+ *
+ * @author ChengTao <a href="mailto:tao@paradisehell.org">Contact me.</a>
  */
 
-@SuppressWarnings("unchecked") public class AutoPlayUtils {
+@SuppressWarnings("unchecked")
+public class AutoPlayUtils {
   public static final Gson gson = new GsonBuilder().create();
 
   public static ArrayList<AutoPlayEntity> getAutoPlayEntityListByJsonString(
@@ -83,9 +82,9 @@ import java.util.List;
         if (key != null) {
           AutoPlayEntity entity = new AutoPlayEntity();
           if (key.getType() == PianoConvertUtils.PianoKey.BLACK_KEY) {
-            entity.setType(Piano.PianoKeyType.BLACK);
-          } else if (key.getType() == PianoConvertUtils.PianoKey.WHITE_KEY) {
-            entity.setType(Piano.PianoKeyType.WHITE);
+            entity.setIsBlackKey(true);
+          } else {
+            entity.setIsBlackKey(false);
           }
           entity.setCurrentBreakTime(key.getFrequency());
           entity.setGroup(key.getGroup());

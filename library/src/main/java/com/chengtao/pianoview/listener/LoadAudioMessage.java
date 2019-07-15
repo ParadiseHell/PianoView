@@ -1,12 +1,11 @@
 package com.chengtao.pianoview.listener;
 
-/**
- * Created by ChengTao on 2016-11-27.
+/*
+ * 加载音频消息接口
+ *
+ * @author ChengTao <a href="mailto:tao@paradisehell.org">Contact me.</a>
  */
 
-/**
- * 加载音频消息接口
- */
 public interface LoadAudioMessage {
   /**
    * 开始

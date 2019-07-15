@@ -6,13 +6,11 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
-import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -26,27 +24,26 @@ import com.chengtao.pianoview.listener.OnLoadAudioListener;
 import com.chengtao.pianoview.listener.OnPianoAutoPlayListener;
 import com.chengtao.pianoview.listener.OnPianoListener;
 import com.chengtao.pianoview.utils.AudioUtils;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-/**
- * Created by ChengTao on 2016-11-25.
+/*
+ * 钢琴自定义视图
+ *
+ * @author ChengTao <a href="mailto:tao@paradisehell.org">Contact me.</a>
  */
 
-public class PianoView extends View {
-  private final static String TAG = "PianoView";
-  //定义钢琴键
-  private Piano piano = null;
-  private ArrayList<PianoKey[]> whitePianoKeys;
-  private ArrayList<PianoKey[]> blackPianoKeys;
-  //被点击过的钢琴键
+public final class PianoView extends View {
+  // 定义钢琴键
+  @NonNull
+  private Piano mPiano;
+  // 被点击过的钢琴键
   private CopyOnWriteArrayList<PianoKey> pressedKeys = new CopyOnWriteArrayList<>();
-  //画笔
+  // 画笔
   private Paint paint;
-  //定义标识音名的正方形
+  // 定义标识音名的正方形
   private RectF square;
-  //正方形背景颜色
+  // 正方形背景颜色
   private String[] pianoColors = {
       "#C0C0C0", "#A52A2A", "#FF8C00", "#FFFF00", "#00FA9A", "#00CED1", "#4169E1", "#FFB6C1",
       "#FFEBCD"
@@ -57,8 +54,6 @@ public class PianoView extends View {
   private Context context;
   //布局的宽度
   private int layoutWidth = 0;
-  //缩放比例
-  private float scale = 1;
   //音频加载接口
   private OnLoadAudioListener loadAudioListener;
   //自动播放接口
@@ -72,7 +67,6 @@ public class PianoView extends View {
   //是否正在自动播放
   private boolean isAutoPlaying = false;
   //初始化结束
-  private boolean isInitFinish = false;
   private int minRange = 0;
   private int maxRange = 0;
   //
@@ -110,41 +104,24 @@ public class PianoView extends View {
     paint.setStyle(Paint.Style.FILL);
     //初始化正方形
     square = new RectF();
+    mPiano = new Piano(getContext(), R.drawable.black_piano_key, R.drawable.white_piano_key);
   }
   //</editor-fold>
 
   @Override
   protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-    Log.e(TAG, "onMeasure");
-    Drawable whiteKeyDrawable = ContextCompat.getDrawable(context, R.drawable.white_piano_key);
-    //最小高度
-    int whiteKeyHeight = whiteKeyDrawable.getIntrinsicHeight();
-    //获取布局中的高度和宽度及其模式
-    int width = MeasureSpec.getSize(widthMeasureSpec);
-    int heightMode = MeasureSpec.getMode(heightMeasureSpec);
-    int height = MeasureSpec.getSize(heightMeasureSpec);
-    //设置高度
-    switch (heightMode) {
-      case MeasureSpec.AT_MOST:
-        height = Math.min(height, whiteKeyHeight);
-        break;
-      case MeasureSpec.UNSPECIFIED:
-        height = whiteKeyHeight;
-        break;
-      default:
-        break;
-    }
-    //设置缩放比例
-    scale = (float) (height - getPaddingTop() - getPaddingBottom()) / (float) (whiteKeyHeight);
-    layoutWidth = width - getPaddingLeft() - getPaddingRight();
-    //设置布局高度和宽度
-    setMeasuredDimension(width, height);
+    super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+    int width = getMeasuredWidth();
+    int height = getMeasuredHeight();
+    mPiano.initPiano(height);
+    Log.w("TAG", "piano width : " + mPiano.getPianoWith());
+    setMeasuredDimension(mPiano.getPianoWith() > width ? mPiano.getPianoWith() : width, height);
   }
 
   @Override
   protected void onDraw(@NonNull Canvas canvas) {
     //初始化钢琴
-    if (piano == null) {
+/*    if (piano == null) {
       minRange = 0;
       maxRange = layoutWidth;
       piano = new Piano(context, scale);
@@ -165,9 +142,10 @@ public class PianoView extends View {
           Log.e(TAG, e.getMessage());
         }
       }
-    }
-    //初始化白键
-    if (whitePianoKeys != null) {
+    }*/
+    if (mPiano.hasInit()) {
+      //初始化白键
+      List<PianoKey[]> whitePianoKeys = mPiano.getWhitePianoKeys();
       for (int i = 0; i < whitePianoKeys.size(); i++) {
         for (PianoKey key : whitePianoKeys.get(i)) {
           paint.setColor(Color.parseColor(pianoColors[i]));
@@ -190,19 +168,18 @@ public class PianoView extends View {
           canvas.drawText(key.getLetterName(), square.centerX(), baseline, paint);
         }
       }
-    }
-    //初始化黑键
-    if (blackPianoKeys != null) {
+      // 初始化黑键
+      List<PianoKey[]> blackPianoKeys = mPiano.getBlackPianoKeys();
       for (int i = 0; i < blackPianoKeys.size(); i++) {
         for (PianoKey key : blackPianoKeys.get(i)) {
           key.getKeyDrawable().draw(canvas);
         }
       }
     }
-    if (!isInitFinish && piano != null && pianoListener != null) {
+/*    if (!isInitFinish && piano != null && pianoListener != null) {
       isInitFinish = true;
       pianoListener.onPianoInitFinish();
-    }
+    }*/
   }
 
   @Override
@@ -253,18 +230,20 @@ public class PianoView extends View {
   private void handleDown(int which, MotionEvent event) {
     int x = (int) event.getX(which) + this.getScrollX();
     int y = (int) event.getY(which);
-    //检查白键
+    // 检查白键
+    List<PianoKey[]> whitePianoKeys = mPiano.getWhitePianoKeys();
     for (int i = 0; i < whitePianoKeys.size(); i++) {
       for (PianoKey key : whitePianoKeys.get(i)) {
-        if (!key.isPressed() && key.contains(x, y)) {
+        if (!key.isPressed() && key.contain(x, y)) {
           handleWhiteKeyDown(which, event, key);
         }
       }
     }
-    //检查黑键
+    // 检查黑键
+    List<PianoKey[]> blackPianoKeys = mPiano.getBlackPianoKeys();
     for (int i = 0; i < blackPianoKeys.size(); i++) {
       for (PianoKey key : blackPianoKeys.get(i)) {
-        if (!key.isPressed() && key.contains(x, y)) {
+        if (!key.isPressed() && key.contain(x, y)) {
           handleBlackKeyDown(which, event, key);
         }
       }
@@ -280,16 +259,22 @@ public class PianoView extends View {
    */
   private void handleWhiteKeyDown(int which, MotionEvent event, PianoKey key) {
     key.getKeyDrawable().setState(new int[] { android.R.attr.state_pressed });
-    key.setPressed(true);
+    key.setIsPressed(true);
     if (event != null) {
-      key.setFingerID(event.getPointerId(which));
+      key.setFingerId(event.getPointerId(which));
     }
     pressedKeys.add(key);
-    invalidate(key.getKeyDrawable().getBounds());
-    utils.playMusic(key);
+    invalidate();
+    if (utils != null) {
+      utils.playMusic(key);
+    }
     if (pianoListener != null) {
-      pianoListener.onPianoClick(key.getType(), key.getVoice(), key.getGroup(),
-          key.getPositionOfGroup());
+      pianoListener.onPianoClick(
+          key.isBlackKey(),
+          key.getPianoKeyVoice(),
+          key.getGroup(),
+          key.getPositionOfGroup()
+      );
     }
   }
 
@@ -302,16 +287,22 @@ public class PianoView extends View {
    */
   private void handleBlackKeyDown(int which, MotionEvent event, PianoKey key) {
     key.getKeyDrawable().setState(new int[] { android.R.attr.state_pressed });
-    key.setPressed(true);
+    key.setIsPressed(true);
     if (event != null) {
-      key.setFingerID(event.getPointerId(which));
+      key.setFingerId(event.getPointerId(which));
     }
     pressedKeys.add(key);
-    invalidate(key.getKeyDrawable().getBounds());
-    utils.playMusic(key);
+    invalidate();
+    if (utils != null) {
+      utils.playMusic(key);
+    }
     if (pianoListener != null) {
-      pianoListener.onPianoClick(key.getType(), key.getVoice(), key.getGroup(),
-          key.getPositionOfGroup());
+      pianoListener.onPianoClick(
+          key.isBlackKey(),
+          key.getPianoKeyVoice(),
+          key.getGroup(),
+          key.getPositionOfGroup()
+      );
     }
   }
 
@@ -325,12 +316,12 @@ public class PianoView extends View {
     int x = (int) event.getX(which) + this.getScrollX();
     int y = (int) event.getY(which);
     for (PianoKey key : pressedKeys) {
-      if (key.getFingerID() == event.getPointerId(which)) {
-        if (!key.contains(x, y)) {
+      if (key.getFingerId() == event.getPointerId(which)) {
+        if (!key.contain(x, y)) {
           key.getKeyDrawable().setState(new int[] { -android.R.attr.state_pressed });
           invalidate(key.getKeyDrawable().getBounds());
-          key.setPressed(false);
-          key.resetFingerID();
+          key.setIsPressed(false);
+          key.resetFingerId();
           pressedKeys.remove(key);
         }
       }
@@ -344,9 +335,9 @@ public class PianoView extends View {
    */
   private void handlePointerUp(int pointerId) {
     for (PianoKey key : pressedKeys) {
-      if (key.getFingerID() == pointerId) {
-        key.setPressed(false);
-        key.resetFingerID();
+      if (key.getFingerId() == pointerId) {
+        key.setIsPressed(false);
+        key.resetFingerId();
         key.getKeyDrawable().setState(new int[] { -android.R.attr.state_pressed });
         invalidate(key.getKeyDrawable().getBounds());
         pressedKeys.remove(key);
@@ -362,7 +353,7 @@ public class PianoView extends View {
     if (pressedKeys.size() > 0) {
       for (PianoKey key : pressedKeys) {
         key.getKeyDrawable().setState(new int[] { -android.R.attr.state_pressed });
-        key.setPressed(false);
+        key.setIsPressed(false);
         invalidate(key.getKeyDrawable().getBounds());
       }
       pressedKeys.clear();
@@ -393,52 +384,47 @@ public class PianoView extends View {
           if (autoPlayEntities != null) {
             for (AutoPlayEntity entity : autoPlayEntities) {
               if (entity != null) {
-                if (entity.getType() != null) {
-                  switch (entity.getType()) {
-                    case BLACK://黑键
-                      PianoKey blackKey = null;
-                      if (entity.getGroup() == 0) {
-                        if (entity.getPosition() == 0) {
-                          blackKey = blackPianoKeys.get(0)[0];
-                        }
-                      } else if (entity.getGroup() > 0 && entity.getGroup() <= 7) {
-                        if (entity.getPosition() >= 0 && entity.getPosition() <= 4) {
-                          blackKey = blackPianoKeys.get(entity.getGroup())[entity.getPosition()];
-                        }
-                      }
-                      if (blackKey != null) {
-                        Message msg = Message.obtain();
-                        msg.what = HANDLE_AUTO_PLAY_BLACK_DOWN;
-                        msg.obj = blackKey;
-                        autoPlayHandler.sendMessage(msg);
-                      }
-                      break;
-                    case WHITE://白键
-                      PianoKey whiteKey = null;
-                      if (entity.getGroup() == 0) {
-                        if (entity.getPosition() == 0) {
-                          whiteKey = whitePianoKeys.get(0)[0];
-                        } else if (entity.getPosition() == 1) {
-                          whiteKey = whitePianoKeys.get(0)[1];
-                        }
-                      } else if (entity.getGroup() >= 0 && entity.getGroup() <= 7) {
-                        if (entity.getPosition() >= 0 && entity.getPosition() <= 6) {
-                          whiteKey = whitePianoKeys.get(entity.getGroup())[entity.getPosition()];
-                        }
-                      } else if (entity.getGroup() == 8) {
-                        if (entity.getPosition() == 0) {
-                          whiteKey = whitePianoKeys.get(8)[0];
-                        }
-                      }
-                      if (whiteKey != null) {
-                        Message msg = Message.obtain();
-                        msg.what = HANDLE_AUTO_PLAY_WHITE_DOWN;
-                        msg.obj = whiteKey;
-                        autoPlayHandler.sendMessage(msg);
-                      }
-                      break;
-                    default:
-                      break;
+                if (entity.isBlackKey()) {
+                  PianoKey blackKey = null;
+                  if (entity.getGroup() == 0) {
+                    if (entity.getPosition() == 0) {
+                      blackKey = mPiano.getBlackPianoKeys().get(0)[0];
+                    }
+                  } else if (entity.getGroup() > 0 && entity.getGroup() <= 7) {
+                    if (entity.getPosition() >= 0 && entity.getPosition() <= 4) {
+                      blackKey =
+                          mPiano.getBlackPianoKeys().get(entity.getGroup())[entity.getPosition()];
+                    }
+                  }
+                  if (blackKey != null) {
+                    Message msg = Message.obtain();
+                    msg.what = HANDLE_AUTO_PLAY_BLACK_DOWN;
+                    msg.obj = blackKey;
+                    autoPlayHandler.sendMessage(msg);
+                  }
+                } else {
+                  PianoKey whiteKey = null;
+                  if (entity.getGroup() == 0) {
+                    if (entity.getPosition() == 0) {
+                      whiteKey = mPiano.getWhitePianoKeys().get(0)[0];
+                    } else if (entity.getPosition() == 1) {
+                      whiteKey = mPiano.getWhitePianoKeys().get(0)[1];
+                    }
+                  } else if (entity.getGroup() >= 0 && entity.getGroup() <= 7) {
+                    if (entity.getPosition() >= 0 && entity.getPosition() <= 6) {
+                      whiteKey =
+                          mPiano.getWhitePianoKeys().get(entity.getGroup())[entity.getPosition()];
+                    }
+                  } else if (entity.getGroup() == 8) {
+                    if (entity.getPosition() == 0) {
+                      whiteKey = mPiano.getWhitePianoKeys().get(8)[0];
+                    }
+                  }
+                  if (whiteKey != null) {
+                    Message msg = Message.obtain();
+                    msg.what = HANDLE_AUTO_PLAY_WHITE_DOWN;
+                    msg.obj = whiteKey;
+                    autoPlayHandler.sendMessage(msg);
                   }
                 }
                 Thread.sleep(entity.getCurrentBreakTime() / 2);
@@ -473,10 +459,7 @@ public class PianoView extends View {
    * @return 钢琴控件的总长度
    */
   public int getPianoWidth() {
-    if (piano != null) {
-      return piano.getPianoWith();
-    }
-    return 0;
+    return mPiano.getPianoWith();
   }
 
   /**

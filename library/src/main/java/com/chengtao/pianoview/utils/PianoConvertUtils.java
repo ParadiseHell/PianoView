@@ -14,11 +14,10 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
-/**
- * Author : ChengTao(chengtaolearn@163.com)
- * Date : 11/3/17
- * Time : 11:43 PM
- * Description :
+/*
+ * 钢琴转换工具类
+ *
+ * @author ChengTao <a href="mailto:tao@paradisehell.org">Contact me.</a>
  */
 
 public class PianoConvertUtils {

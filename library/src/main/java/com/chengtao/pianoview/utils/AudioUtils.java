@@ -13,17 +13,16 @@ import com.chengtao.pianoview.entity.Piano;
 import com.chengtao.pianoview.entity.PianoKey;
 import com.chengtao.pianoview.listener.LoadAudioMessage;
 import com.chengtao.pianoview.listener.OnLoadAudioListener;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/**
- * Created by ChengTao on 2016-11-26.
+/*
+ * 音频工具类
+ *
+ * @author ChengTao <a href="mailto:tao@paradisehell.org">Contact me.</a>
  */
 
-/**
- * 音频工具类
- */
 public class AudioUtils implements LoadAudioMessage {
   //线程池,用于加载和播放音频
   private ExecutorService service = Executors.newCachedThreadPool();
@@ -107,7 +106,7 @@ public class AudioUtils implements LoadAudioMessage {
         isLoading = true;
         pool.setOnLoadCompleteListener((soundPool, sampleId, status) -> {
           loadNum++;
-          if (loadNum == Piano.PIANO_NUMS) {
+          if (loadNum == Piano.PIANO_COUNT) {
             isLoadFinish = true;
             sendProgressMessage(100);
             sendFinishMessage();
@@ -115,14 +114,14 @@ public class AudioUtils implements LoadAudioMessage {
             pool.play(whiteKeyMusics.get(0), 0, 0, 1, -1, 2f);
           } else {
             if (System.currentTimeMillis() - currentTime >= SEND_PROGRESS_MESSAGE_BREAK_TIME) {
-              sendProgressMessage((int) (((float) loadNum / (float) Piano.PIANO_NUMS) * 100f));
+              sendProgressMessage((int) (((float) loadNum / (float) Piano.PIANO_COUNT) * 100f));
               currentTime = System.currentTimeMillis();
             }
           }
         });
         service.execute(() -> {
           sendStartMessage();
-          ArrayList<PianoKey[]> whiteKeys = piano.getWhitePianoKeys();
+          List<PianoKey[]> whiteKeys = piano.getWhitePianoKeys();
           int whiteKeyPos = 0;
           for (int i = 0; i < whiteKeys.size(); i++) {
             for (PianoKey key : whiteKeys.get(i)) {
@@ -140,7 +139,7 @@ public class AudioUtils implements LoadAudioMessage {
               }
             }
           }
-          ArrayList<PianoKey[]> blackKeys = piano.getBlackPianoKeys();
+          List<PianoKey[]> blackKeys = piano.getBlackPianoKeys();
           int blackKeyPos = 0;
           for (int i = 0; i < blackKeys.size(); i++) {
             for (PianoKey key : blackKeys.get(i)) {
@@ -171,18 +170,13 @@ public class AudioUtils implements LoadAudioMessage {
   public void playMusic(final PianoKey key) {
     if (key != null) {
       if (isLoadFinish) {
-        if (key.getType() != null) {
-          service.execute(() -> {
-            switch (key.getType()) {
-              case BLACK:
-                playBlackKeyMusic(key.getGroup(), key.getPositionOfGroup());
-                break;
-              case WHITE:
-                playWhiteKeyMusic(key.getGroup(), key.getPositionOfGroup());
-                break;
-            }
-          });
-        }
+        service.execute(() -> {
+          if (key.isBlackKey()) {
+            playBlackKeyMusic(key.getGroup(), key.getPositionOfGroup());
+          } else {
+            playWhiteKeyMusic(key.getGroup(), key.getPositionOfGroup());
+          }
+        });
       }
     }
   }
