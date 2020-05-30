@@ -157,6 +157,7 @@ public final class Piano {
         keys[j].setPositionOfGroup(j);
         keys[j].setVoiceId(getVoiceFromResources("b" + i + j));
         keys[j].setIsPressed(false);
+        /*
         keys[j].setKeyDrawable(new ScaleDrawable(
             ContextCompat.getDrawable(mContext, mPianoBlackKeyResourceId),
             Gravity.NO_GRAVITY,
@@ -165,6 +166,7 @@ public final class Piano {
         ).getDrawable());
         setBlackKeyDrawableBounds(i, j, keys[j].getKeyDrawable());
         areaOfKey[0] = keys[j].getKeyDrawable().getBounds();
+        */
         keys[j].setAreaOfKey(areaOfKey);
         if (i == 0) {
           keys[j].setPianoKeyVoice(PianoKeyVoice.LA);
@@ -200,6 +202,7 @@ public final class Piano {
         mKeys[j].setPositionOfGroup(j);
         mKeys[j].setVoiceId(getVoiceFromResources("w" + i + j));
         mKeys[j].setIsPressed(false);
+        /*
         mKeys[j].setKeyDrawable(new ScaleDrawable(
             ContextCompat.getDrawable(mContext, mPianoWhiteKeyResourceId),
             Gravity.NO_GRAVITY,
@@ -207,6 +210,7 @@ public final class Piano {
             mScale
         ).getDrawable());
         setWhiteKeyDrawableBounds(i, j, mKeys[j].getKeyDrawable());
+        */
         mPianoWith += mWhiteKeyWidth;
         if (i == 0) {
           switch (j) {
@@ -223,7 +227,7 @@ public final class Piano {
           }
         } else if (i == 8) {
           Rect[] areaOfKey = new Rect[1];
-          areaOfKey[0] = mKeys[j].getKeyDrawable().getBounds();
+          //areaOfKey[0] = mKeys[j].getKeyDrawable().getBounds();
           mKeys[j].setAreaOfKey(areaOfKey);
           mKeys[j].setPianoKeyVoice(PianoKeyVoice.DO);
           mKeys[j].setLetterName("C8");

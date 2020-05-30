@@ -1,9 +1,10 @@
 package com.chengtao.pianoview.entity;
 
+import android.graphics.Bitmap;
 import android.graphics.Rect;
-import android.graphics.drawable.Drawable;
 import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 /*
  * 钢琴键模型
@@ -25,7 +26,10 @@ public final class PianoKey {
   @IntRange(from = 0)
   private int mPositionOfGroup;
   // 图标
-  private Drawable mKeyDrawable;
+  @Nullable
+  private Bitmap mNormalKeyBitmap;
+  @Nullable
+  private Bitmap mPressedKeyBitmap;
   // 音乐 id
   private int mVoiceId;
   // 标志，是否被点击，默认未点击
@@ -56,8 +60,9 @@ public final class PianoKey {
     mPositionOfGroup = positionOfGroup;
   }
 
-  public void setKeyDrawable(@NonNull Drawable keyDrawable) {
-    mKeyDrawable = keyDrawable;
+  public void setKeyBitmap(@NonNull Bitmap normalKeyBitmap, @NonNull Bitmap pressedKeyBitmap) {
+    mNormalKeyBitmap = normalKeyBitmap;
+    mPressedKeyBitmap = pressedKeyBitmap;
   }
 
   public void setVoiceId(int voiceId) {
@@ -103,11 +108,19 @@ public final class PianoKey {
   }
 
   @NonNull
-  public Drawable getKeyDrawable() {
-    if (mKeyDrawable == null) {
-      throw new NullPointerException("please call PianoKey#setKeyDrawable first !!!");
+  public Bitmap getNormalKeyBitmap() {
+    if (mNormalKeyBitmap == null) {
+      throw new NullPointerException();
     }
-    return mKeyDrawable;
+    return mNormalKeyBitmap;
+  }
+
+  @NonNull
+  public Bitmap getPressedKeyBitmap() {
+    if (mPressedKeyBitmap == null) {
+      throw new NullPointerException();
+    }
+    return mPressedKeyBitmap;
   }
 
   public int getVoiceId() {

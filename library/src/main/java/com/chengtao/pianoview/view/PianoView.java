@@ -1,5 +1,6 @@
 package com.chengtao.pianoview.view;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -44,9 +45,16 @@ public final class PianoView extends View {
   // 定义标识音名的正方形
   private RectF square;
   // 正方形背景颜色
-  private String[] pianoColors = {
-      "#C0C0C0", "#A52A2A", "#FF8C00", "#FFFF00", "#00FA9A", "#00CED1", "#4169E1", "#FFB6C1",
-      "#FFEBCD"
+  private int[] mPianoColors = {
+      0xC0C0C0,
+      0xA52A2A,
+      0xFF8C00,
+      0xFFFF00,
+      0x00FA9A,
+      0x00CED1,
+      0x4169E1,
+      0xFFB6C1,
+      0xFFEBCD
   };
   //播放器工具
   private AudioUtils utils = null;
@@ -148,7 +156,8 @@ public final class PianoView extends View {
       List<PianoKey[]> whitePianoKeys = mPiano.getWhitePianoKeys();
       for (int i = 0; i < whitePianoKeys.size(); i++) {
         for (PianoKey key : whitePianoKeys.get(i)) {
-          paint.setColor(Color.parseColor(pianoColors[i]));
+          paint.setColor(mPianoColors[i]);
+          canvas.drawBitmap();
           key.getKeyDrawable().draw(canvas);
           //初始化音名区域
           Rect r = key.getKeyDrawable().getBounds();
@@ -183,14 +192,15 @@ public final class PianoView extends View {
   }
 
   @Override
+  @SuppressLint("ClickableViewAccessibility")
   public boolean onTouchEvent(MotionEvent event) {
     if (canPress) {
       switch (event.getAction()) {
-        //当第一个手指点击按键的时候
+        // 当第一个手指点击按键的时候
         case MotionEvent.ACTION_DOWN:
           handleDown(event.getActionIndex(), event);
           break;
-        //当手指在键盘上滑动的时候
+        // 当手指在键盘上滑动的时候
         case MotionEvent.ACTION_MOVE:
           for (int i = 0; i < event.getPointerCount(); i++) {
             handleMove(i, event);
@@ -199,26 +209,25 @@ public final class PianoView extends View {
             handleDown(i, event);
           }
           break;
-        //多点触控，当其他手指点击键盘的手
+        // 多点触控，当其他手指点击键盘的手
         case MotionEvent.ACTION_POINTER_DOWN:
           handleDown(event.getActionIndex(), event);
           break;
-        //多点触控，当其他手指抬起的时候
+        // 多点触控，当其他手指抬起的时候
         case MotionEvent.ACTION_POINTER_UP:
           handlePointerUp(event.getPointerId(event.getActionIndex()));
           break;
-        //但最后一个手指抬起的时候
+        // 但最后一个手指抬起的时候
         case MotionEvent.ACTION_UP:
           handleUp();
           this.performClick();
           break;
         default:
-          break;
+          return false;
       }
       return true;
-    } else {
-      return false;
     }
+    return false;
   }
 
   /**
@@ -477,10 +486,28 @@ public final class PianoView extends View {
    *
    * @param pianoColors 颜色数组，长度为9
    */
-  public void setPianoColors(String[] pianoColors) {
-    if (pianoColors.length == 9) {
-      this.pianoColors = pianoColors;
+  public void setPianoColors(@NonNull String[] pianoColors) {
+    if (pianoColors.length != 9) {
+      throw new IllegalArgumentException("piano colors' length must be 9");
     }
+    int[] colors = new int[9];
+    for (int i = 0; i < 9; i++) {
+      colors[i] = Color.parseColor(pianoColors[i]);
+    }
+    setPianoColors(colors);
+  }
+
+  /**
+   * 设置显示音名的矩形的颜色<br>
+   * <b>注:一共9中颜色</b>
+   *
+   * @param pianoColors 颜色数组，长度为9
+   */
+  public void setPianoColors(@NonNull int[] pianoColors) {
+    if (pianoColors.length != 9) {
+      throw new IllegalArgumentException("piano colors' length must be 9");
+    }
+    mPianoColors = pianoColors;
   }
 
   /**
