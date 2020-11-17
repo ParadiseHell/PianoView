@@ -200,45 +200,39 @@ public class PianoView extends View {
   }
 
   @Override public boolean onTouchEvent(MotionEvent event) {
-    if (canPress) {
-      switch (event.getAction()) {
-        //当第一个手指点击按键的时候
-        case MotionEvent.ACTION_DOWN:
-          handleDown(event.getActionIndex(), event);
-          break;
-        //当手指在键盘上滑动的时候
-        case MotionEvent.ACTION_MOVE:
-          for (int i = 0; i < event.getPointerCount(); i++) {
-            handleMove(i, event);
-          }
-          for (int i = 0; i < event.getPointerCount(); i++) {
-            handleDown(i, event);
-          }
-          break;
-        //多点触控，当其他手指点击键盘的手
-        case MotionEvent.ACTION_POINTER_DOWN:
-          handleDown(event.getActionIndex(), event);
-          break;
-        //多点触控，当其他手指抬起的时候
-        case MotionEvent.ACTION_POINTER_UP:
-          handlePointerUp(event.getPointerId(event.getActionIndex()));
-          break;
-        //但最后一个手指抬起的时候
-        case MotionEvent.ACTION_UP:
-          handleUp();
-          this.performClick();
-          break;
-        default:
-          break;
-      }
-      return true;
-    } else {
+    int action = event.getActionMasked();
+    if (!canPress) {
       return false;
     }
-  }
-
-  @Override public boolean performClick() {
-    return super.performClick();
+    switch (action) {
+      //当第一个手指点击按键的时候
+      case MotionEvent.ACTION_DOWN:
+        //多点触控，当其他手指点击键盘的手
+      case MotionEvent.ACTION_POINTER_DOWN:
+        handleDown(event.getActionIndex(), event);
+        break;
+      //当手指在键盘上滑动的时候
+      case MotionEvent.ACTION_MOVE:
+        for (int i = 0; i < event.getPointerCount(); i++) {
+          handleMove(i, event);
+        }
+        for (int i = 0; i < event.getPointerCount(); i++) {
+          handleDown(i, event);
+        }
+        break;
+      //多点触控，当其他手指抬起的时候
+      case MotionEvent.ACTION_POINTER_UP:
+        handlePointerUp(event.getPointerId(event.getActionIndex()));
+        break;
+      //但最后一个手指抬起的时候
+      case MotionEvent.ACTION_UP:
+      case MotionEvent.ACTION_CANCEL:
+        handleUp();
+        return false;
+      default:
+        break;
+    }
+    return true;
   }
 
   /**
